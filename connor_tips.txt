@@ -1,0 +1,30 @@
+
+
+
+VSCode keyboard shortcuts
+-------------------------
+
+The best one:
+    Ctrl + Shift + P        - Run any command by typing it's name e.g. Git Push
+
+Other good ones:
+    Ctrl + K -> Ctrl + Q    - Go to last place you made a change to a file
+    F12                     - Go to Definition (aka "Go in")
+    Alt + Left              - Go Back (aka "Go back out")
+                              You need to map this keyboard shortcut yourself I think
+
+    Ctrl + PageUp/Down      - Move between open files
+
+
+    Ctrl + Shift + E        - Go to files list tab on left
+    Ctrl + Shift + G        - Go to Source Control (Git) tab on left  (GitLens seems to interfere with this one though)
+    Ctrl + Shift + G -> G   - Go to Source Control (Git) tab - if GitLens is enabled
+    Ctrl + Shift + F        - Find in files
+
+    Ctrl + K -> Ctrl + S    - Open Keyboard Shortcuts
+
+    Ctrl + Shift + G -> B   - Git Line annotations
+
+GitLens
+-------
+Settings: Do Ctrl + Shift + P and type "GitLens: Open Settings"
