@@ -8,6 +8,7 @@ import pygame, sys
 from pygame.locals import *
 import random
 import math
+import os
 
 display_width = 800
 display_height = 600
@@ -229,6 +230,28 @@ class SpriteImageDrawingHelper():
         # draw the image, centred on x,y - so that any rotation looks good
         drawImageCentered(self.imageRotated, self.sprite.x, self.sprite.y)
 
+# Try to find an image file given a base name e.g. invader.jpg
+# We can try whatever prefixes we like
+# This allows us to use Visual Studio Code and open the parent dir of "pygamehelperpublic" rather than that exact dir
+# and then 'run' will set the working dir to that parent dir
+# so we need to try looking in the "pygamehelperpublic" subdir for images
+def resolveImageFile(imageFilename):
+    print("resolveImageFile: " + imageFilename)
+
+    # Try current dir
+    modifiedName = imageFilename
+    if os.path.isfile(modifiedName):
+        print("-> resolved to: " + modifiedName)
+        return imageFilename
+    
+    # Try pygamehelperpublic dir
+    modifiedName = "./pygamehelperpublic/" + imageFilename
+    if os.path.isfile(modifiedName):
+        print("-> resolved to: " + modifiedName)
+        return modifiedName
+
+    print("Cannot resolve imageFilename: " + imageFilename)
+    raise NameError("Cannot resolve imageFilename: " + imageFilename)
 
 # Loads and contains one or more images to use for a SpriteWithImage
 # Basically a list of costumes
@@ -244,7 +267,8 @@ class ImageHandler():
         # Load all the image names and store images
         self.spriteImages = []
         for spriteImageName in spriteImageNames:
-            image = pygame.image.load(spriteImageName)
+            spriteImageNameResolved = resolveImageFile(spriteImageName)
+            image = pygame.image.load(spriteImageNameResolved)
             self.spriteImages.append(image)
 
         # default to first image
