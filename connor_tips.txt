@@ -1,5 +1,11 @@
 
 
+Windows
+-------
+
+Windows + Shift + S         - Partial screenshot
+
+
 
 VSCode keyboard shortcuts
 -------------------------
