@@ -328,6 +328,17 @@ class BounceSprite_EdgeOfScreenChecker():
             sprite.bounceOnEdgeOfScreen()
 
 
+def findSprites(point):
+    return findSprites2(point[0], point[1])
+
+# Find which sprites are at the point x,y
+def findSprites2(x, y):
+    result = []
+    for sprite in sprites:
+        if sprite.getBoundingRect().collidepoint(x, y):
+            result.append(sprite)
+    return result
+
 def findCollisions(sprite):
     result = []
     spriteBoundingRect = sprite.getBoundingRect()
@@ -486,6 +497,9 @@ def randomDirectionAsVector(size = 1):
     randomAngle = random.randint(0, 360)
     return angleToVector(randomAngle, size)
 
+def randomDirection():
+    return random.randint(0, 360)
+
 def randomX():
     return random.randint(1, getScreenRect().width)
 
@@ -496,6 +510,7 @@ gameDisplay = None
 clock = None
 defaultFont = None
 largeFont = None
+mediumFont = None
 hugeFont = None
 sprites = []
 debug = True
@@ -514,12 +529,14 @@ def initPygame():
     global clock
     global defaultFont
     global largeFont
+    global mediumFont
     global hugeFont
     pygame.init()
     gameDisplay = pygame.display.set_mode((display_width,display_height))
     print("gameDisplay is now: " + str(gameDisplay))
     clock = pygame.time.Clock()
     defaultFont = pygame.font.SysFont(None, 12)
+    mediumFont = pygame.font.SysFont(None, 18)
     largeFont = pygame.font.SysFont(None, 36)
     hugeFont = pygame.font.SysFont(None, 72)
     
