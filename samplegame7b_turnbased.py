@@ -43,6 +43,9 @@ class GridHelper(Sprite):
 
     def addGridPiece(self, sprite):
         self.gridPieces.append(sprite)
+    
+    def removeGridPiece(self, sprite):
+        self.gridPieces.remove(sprite)
 
     def move(self):
         pass
@@ -73,10 +76,20 @@ class GridHelper(Sprite):
     def clearHighlights(self):
         for gridPiece in self.gridPieces:
             gridPiece.clearHighlight()
+    
+    # Get the piece at the specified grid location, or return None if there is none
+    def getPieceAtCell(self, rowIdx, columnIdx):
+        for gridPiece in self.gridPieces:
+            if gridPiece.rowIdx == rowIdx and gridPiece.columnIdx == columnIdx:
+                return gridPiece
+        return None
 
 #
 # GridPieceBase
 # Exists in a particular cell of a grid
+#
+# Note: To 'kill' a grid piece it's recommended that you call removeFromGrid, which immediately
+#       removes the piece rather than deferring this until the game loop reaches the kill stage
 # 
 class GridPieceBase(Sprite):
     def __init__(self, gridHelper, rowIdx, columnIdx):
@@ -102,6 +115,15 @@ class GridPieceBase(Sprite):
     def clearHighlight(self):
         self.highlight = False
 
+    def removeFromGrid(self):
+        # Kill the sprite - deferred until main loop gets to that stage
+        self.dead = True
+        # Immediately remove from grid, so the cell is immediately free
+        self.gridHelper.removeGridPiece(self)
+
+    def onDeath(self):
+        # TODO: We could check whether we've been removed from the grid and warn if not
+        pass
 #
 # GridPiece
 # Exists in a particular cell of a grid
@@ -143,16 +165,25 @@ class GridPiece(GridPieceBase):
         self.addMoveTargetMaybe(self.rowIdx, self.columnIdx + 1)
 
     def addMoveTargetMaybe(self, rowIdx, columnIdx):
-        if self.gridHelper.isCellOnGrid(rowIdx, columnIdx):
-            moveTarget = MoveTarget(self, self.gridHelper, rowIdx, columnIdx)
-            self.moveTargets.append(moveTarget)
-            addSprite(moveTarget)
+        # Check if on grid
+        if not self.gridHelper.isCellOnGrid(rowIdx, columnIdx):
+            return
+        # Check if square occupied by another piece
+        # TODO: If it's an opponent piece then we could take it...
+        if self.gridHelper.getPieceAtCell(rowIdx, columnIdx) != None:
+            return
+
+        # OK to add
+        moveTarget = MoveTarget(self, self.gridHelper, rowIdx, columnIdx)
+        self.moveTargets.append(moveTarget)
+        addSprite(moveTarget)
 
     def clearHighlight(self):
         super().clearHighlight()
         # Also destroy any MoveTargets for this piece
         for moveTarget in self.moveTargets:
-            moveTarget.dead = True
+            moveTarget.removeFromGrid()
+        self.moveTargets = []
 
     # Complete move by a player
     def movePieceTo(self, moveToRowIdx, moveToColumnIdx):
@@ -277,15 +308,15 @@ class MyGameLoop(GameLoop):
         # Draws the grid
         self.gridHelper = GridHelper()
         pygamehelper.addSprite(self.gridHelper)
-        # Create a couple of boxes which will bounce around
-        # pygamehelper.addSprite(Box(20, 20, 110))
-        # pygamehelper.addSprite(Box(20, 300, 45))
-        # object to keep track of turns
+
+        # Object to keep track of turns
         self.turnKeeper = Turnkeeper(140, 20)
         pygamehelper.addSprite(self.turnKeeper)
 
+        # Initial board setup
         pygamehelper.addSprite(GridPiece(self.gridHelper, 0,0))
         pygamehelper.addSprite(GridPiece(self.gridHelper, 1,1))
+        pygamehelper.addSprite(GridPiece(self.gridHelper, 2,2))
 
     #
     # TODO

@@ -146,6 +146,11 @@ class Sprite():
     def onDeathSpawn(self):
         return []
     
+    # Called when the sprite is removed on death
+    # By default this does nothing but can be used as a hook to run logic on sprite death
+    def onDeath(self):
+        pass
+
     def drawDebug(self):
         pygame.draw.rect(gameDisplay, red, self.boundingRect, 1)
 
@@ -590,6 +595,7 @@ def moveAndDrawAllSprites():
     for allDeadItem in allDeads:
         if allDeadItem in sprites:
             sprites.remove(allDeadItem)
+            allDeadItem.onDeath()
 
     # draw
     for sprite in sprites:
