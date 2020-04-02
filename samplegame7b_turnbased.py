@@ -26,11 +26,13 @@ pygamehelper.initPygame()
 
 #
 # GridHelper
-# Manages a group of sprites on a grid
+# - Manages a group of sprites on a grid
+# - Draws the grid
+# - Converts rowIdx,columnIndex to screen coords
 # 
 class GridHelper(Sprite):
     def __init__(self):
-        super().__init__(100, 100, 50, 50)
+        super().__init__(100, 100, 5, 5)
         # The size of each cell
         self.cellSize = 50
         # The number of rows and columns in the grid
@@ -108,9 +110,16 @@ class GridPiece(GridPieceBase):
     def __init__(self, gridHelper, rowIdx, columnIdx):
         super().__init__(gridHelper, rowIdx, columnIdx)
         self.moveTargets = []
+        self.mover = None
 
     def move(self):
-        super().move()
+        if self.mover == None:
+            super().move()
+        else:
+            framesLeft = self.mover.moveFrame()
+            if not framesLeft:
+                # End move animation
+                self.mover = None
 
     def draw(self):
         super().draw()
@@ -122,13 +131,17 @@ class GridPiece(GridPieceBase):
         self.gridHelper.clearHighlights()
         # Highlight this piece
         self.highlight = not self.highlight
-        # Show move targets
+        # Show move targets - these are the spaces this piece can possibly move to
         self.moveTargets = [ ]
-        if self.gridHelper.isCellOnGrid(self.rowIdx - 1, self.columnIdx):
-            self.moveTargets.append(MoveTarget(self, self.gridHelper, self.rowIdx - 1, self.columnIdx))
-        if self.gridHelper.isCellOnGrid(self.rowIdx + 1, self.columnIdx):
-            self.moveTargets.append(MoveTarget(self, self.gridHelper, self.rowIdx + 1, self.columnIdx))
-        for moveTarget in self.moveTargets:
+        self.addMoveTargetMaybe(self.rowIdx - 1, self.columnIdx)
+        self.addMoveTargetMaybe(self.rowIdx + 1, self.columnIdx)
+        self.addMoveTargetMaybe(self.rowIdx + 1, self.columnIdx - 1)
+        self.addMoveTargetMaybe(self.rowIdx + 1, self.columnIdx + 1)
+
+    def addMoveTargetMaybe(self, rowIdx, columnIdx):
+        if self.gridHelper.isCellOnGrid(rowIdx, columnIdx):
+            moveTarget = MoveTarget(self, self.gridHelper, rowIdx, columnIdx)
+            self.moveTargets.append(moveTarget)
             addSprite(moveTarget)
 
     def clearHighlight(self):
@@ -138,28 +151,50 @@ class GridPiece(GridPieceBase):
             moveTarget.dead = True
 
     # Complete move by a player
-    def movePieceTo(self, rowIdx, columnIdx):
+    def movePieceTo(self, moveToRowIdx, moveToColumnIdx):
         self.clearHighlight()
-        self.rowIdx = rowIdx
-        self.columnIdx = columnIdx
+
+        # animate the move to the new cell screen position
+        newCellPoint = self.gridHelper.getCellPoint(moveToRowIdx, moveToColumnIdx)
+        self.mover = GridPieceMover(self, newCellPoint[0], newCellPoint[1], 20)
+        # set new row/col now for the piece - it's UI will catch up quickly as the move animation takes place
+        self.rowIdx = moveToRowIdx
+        self.columnIdx = moveToColumnIdx
         game.endTurn()
+
+#
+# Animates a move from one grid square to another
+#
+class GridPieceMover:
+    def __init__(self, targetOfMove, moveToX, moveToY, numFrames):
+        self.targetOfMove = targetOfMove
+        # FROM -> TO
+        self.moveFromX = targetOfMove.x
+        self.moveFromY = targetOfMove.y
+        self.moveToX = moveToX
+        self.moveToY = moveToY
+        # Amount to move each frame
+        self.dx = (self.moveToX - self.moveFromX) / numFrames
+        self.dy = (self.moveToY - self.moveFromY) / numFrames
+        # Number of frames to move for until we're done
+        self.framesLeft = numFrames
+
+    def moveFrame(self):
+        self.targetOfMove.moveBy(self.dx, self.dy)
+        self.framesLeft = self.framesLeft - 1
+        return self.framesLeft > 0
 
 #
 # MoveTarget
 # Exists in a particular cell of a grid
-# Denotes target square for a move for a GridPiece
+# Denotes target square for a possible move for a GridPiece
+# If clicked, we'll move the original piece to this square
 # 
 class MoveTarget(GridPieceBase):
     def __init__(self, targetOfMove, gridHelper, rowIdx, columnIdx):
         super().__init__(gridHelper, rowIdx, columnIdx)
         self.highlight = True
         self.targetOfMove = targetOfMove
-
-    def move(self):
-        super().move()
-
-    def draw(self):
-        super().draw()
 
     def onClick(self):
         print("click move target")
