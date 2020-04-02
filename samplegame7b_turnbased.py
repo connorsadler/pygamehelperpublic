@@ -99,6 +99,7 @@ class GridPieceBase(Sprite):
         self.rowIdx = rowIdx
         self.columnIdx = columnIdx
         self.highlight = False
+        self.highlightColour = green
 
     def move(self):
         cellPoint = self.gridHelper.getCellPoint(self.rowIdx, self.columnIdx)
@@ -107,7 +108,7 @@ class GridPieceBase(Sprite):
 
     def draw(self):
         if self.highlight:
-            drawRect(self.getBoundingRect(), green, 4)
+            drawRect(self.getBoundingRect(), self.highlightColour, 4)
 
     def onClick(self):
         pass
@@ -129,10 +130,12 @@ class GridPieceBase(Sprite):
 # Exists in a particular cell of a grid
 # 
 class GridPiece(GridPieceBase):
-    def __init__(self, gridHelper, rowIdx, columnIdx):
+    def __init__(self, gridHelper, rowIdx, columnIdx, player):
         super().__init__(gridHelper, rowIdx, columnIdx)
         self.moveTargets = []
         self.mover = None
+        # This is the PlayerScore object for the player
+        self.player = player
 
     def move(self):
         if self.mover == None:
@@ -145,14 +148,14 @@ class GridPiece(GridPieceBase):
 
     def draw(self):
         super().draw()
-        drawText("X", self.x + 15, self.y + 12, pygamehelper.largeFont, white)
+        drawText("X", self.x + 15, self.y + 12, pygamehelper.largeFont, self.player.playerColour)
 
     def onClick(self):
         print("click")
         # Unhighlight everything else
         self.gridHelper.clearHighlights()
         # Highlight this piece
-        self.highlight = not self.highlight
+        self.highlight = True
         # Show move targets - these are the spaces this piece can possibly move to
         self.moveTargets = [ ]
         self.addMoveTargetMaybe(self.rowIdx - 1, self.columnIdx)
@@ -169,12 +172,17 @@ class GridPiece(GridPieceBase):
         if not self.gridHelper.isCellOnGrid(rowIdx, columnIdx):
             return
         # Check if square occupied by another piece
-        # TODO: If it's an opponent piece then we could take it...
-        if self.gridHelper.getPieceAtCell(rowIdx, columnIdx) != None:
-            return
+        # If it's an opponent piece then we could take it
+        pieceAlreadyThere = self.gridHelper.getPieceAtCell(rowIdx, columnIdx)
+        moveIsCapture = False
+        if pieceAlreadyThere != None:
+            if pieceAlreadyThere.player == self.player:
+                return # You can't take your own piece
+            else:
+                moveIsCapture = True # You can take an opponent's piece
 
         # OK to add
-        moveTarget = MoveTarget(self, self.gridHelper, rowIdx, columnIdx)
+        moveTarget = MoveTarget(self, self.gridHelper, rowIdx, columnIdx, moveIsCapture)
         self.moveTargets.append(moveTarget)
         addSprite(moveTarget)
 
@@ -226,10 +234,14 @@ class GridPieceMover:
 # If clicked, we'll move the original piece to this square
 # 
 class MoveTarget(GridPieceBase):
-    def __init__(self, targetOfMove, gridHelper, rowIdx, columnIdx):
+    def __init__(self, targetOfMove, gridHelper, rowIdx, columnIdx, moveIsCapture):
         super().__init__(gridHelper, rowIdx, columnIdx)
         self.highlight = True
         self.targetOfMove = targetOfMove
+        # Whether the move is a capture move i.e. taking an opponent's piece
+        self.moveIsCapture = moveIsCapture
+        if self.moveIsCapture:
+            self.highlightColour = yellow
 
     def onClick(self):
         print("click move target")
@@ -244,9 +256,10 @@ class MoveTarget(GridPieceBase):
 # We'll create an instance of this per player
 #
 class PlayerScore():
-    def __init__(self):
+    def __init__(self, playerColour):
         self.score = 0
         self.misses = 0
+        self.playerColour = playerColour
 
     def registerScore(self, scoreValue):
         self.score += scoreValue
@@ -267,8 +280,8 @@ class Turnkeeper(Sprite):
         self.currentPlayerNumber = 1
         # scores for each player
         self.playerScores = {
-            1: PlayerScore(),
-            2: PlayerScore()
+            1: PlayerScore(white),
+            2: PlayerScore(black)
         }
 
     def move(self):
@@ -290,8 +303,11 @@ class Turnkeeper(Sprite):
         print("self.currentPlayerNumber is now: " + str(self.currentPlayerNumber))
 
     # grab the object which holds scores for the current player
-    def getCurrentPlayerScore(self):
-        return self.playerScores[self.currentPlayerNumber]
+    def getCurrentPlayer(self):
+        return getPlayer(self.currentPlayerNumber)
+
+    def getPlayer(self, playerNumber):
+        return self.playerScores[playerNumber]
 
 #
 # Game loop logic
@@ -314,9 +330,9 @@ class MyGameLoop(GameLoop):
         pygamehelper.addSprite(self.turnKeeper)
 
         # Initial board setup
-        pygamehelper.addSprite(GridPiece(self.gridHelper, 0,0))
-        pygamehelper.addSprite(GridPiece(self.gridHelper, 1,1))
-        pygamehelper.addSprite(GridPiece(self.gridHelper, 2,2))
+        pygamehelper.addSprite(GridPiece(self.gridHelper, 0,0, self.turnKeeper.getPlayer(1)))
+        pygamehelper.addSprite(GridPiece(self.gridHelper, 1,1, self.turnKeeper.getPlayer(1)))
+        pygamehelper.addSprite(GridPiece(self.gridHelper, 2,2, self.turnKeeper.getPlayer(2)))
 
     #
     # TODO
@@ -331,23 +347,14 @@ class MyGameLoop(GameLoop):
 
     def onEvent(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
-            #self.gridHelper.clearHighlights()
-
             clickPosition = pygame.mouse.get_pos()
             clickedSprites = findSprites(clickPosition)
             if len(clickedSprites) > 0:
-                # scoring click
                 for clickedSprite in clickedSprites:
                     clickedSprite.onClick()
-            # else:
-            #     # non-scoring (missing) click
-            #     self.turnKeeper.getCurrentPlayerScore().registerMiss()
-            
-            # ??? end turn on every click, whether they hit anything or not - switch turn to other player
-            # game.endTurn()
 
     def registerScoreForCurrentPlayer(self, scoreValue):
-        self.turnKeeper.getCurrentPlayerScore().registerScore(scoreValue)
+        self.turnKeeper.getCurrentPlayer().registerScore(scoreValue)
 
     def endTurn(self):
         self.turnKeeper.endTurn()
