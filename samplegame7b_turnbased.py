@@ -152,6 +152,14 @@ class GridPiece(GridPieceBase):
 
     def onClick(self):
         print("click")
+
+        # Only allow click on current player's pieces, and on 'move targets'
+        # This has the good side effect that if you click on a MoveTarget and it has a piece to be capture on that same square, the onClick will fire for both and
+        # this check for the piece to be captured will mean it will do nothing, so the MoveTarget onClick will only fire
+        if game.getCurrentPlayer() != self.player:
+            print("Different players piece, no click allowed")
+            return
+
         # Unhighlight everything else
         self.gridHelper.clearHighlights()
         # Highlight this piece
@@ -182,7 +190,7 @@ class GridPiece(GridPieceBase):
                 moveIsCapture = True # You can take an opponent's piece
 
         # OK to add
-        moveTarget = MoveTarget(self, self.gridHelper, rowIdx, columnIdx, moveIsCapture)
+        moveTarget = MoveTarget(self, self.gridHelper, rowIdx, columnIdx, moveIsCapture, pieceAlreadyThere)
         self.moveTargets.append(moveTarget)
         addSprite(moveTarget)
 
@@ -234,7 +242,7 @@ class GridPieceMover:
 # If clicked, we'll move the original piece to this square
 # 
 class MoveTarget(GridPieceBase):
-    def __init__(self, targetOfMove, gridHelper, rowIdx, columnIdx, moveIsCapture):
+    def __init__(self, targetOfMove, gridHelper, rowIdx, columnIdx, moveIsCapture, pieceToCapture):
         super().__init__(gridHelper, rowIdx, columnIdx)
         self.highlight = True
         self.targetOfMove = targetOfMove
@@ -242,10 +250,13 @@ class MoveTarget(GridPieceBase):
         self.moveIsCapture = moveIsCapture
         if self.moveIsCapture:
             self.highlightColour = yellow
+        self.pieceToCapture = pieceToCapture
 
     def onClick(self):
         print("click move target")
         self.targetOfMove.movePieceTo(self.rowIdx, self.columnIdx)
+        if self.pieceToCapture != None:
+            self.pieceToCapture.removeFromGrid()
 
     def clearHighlight(self):
         # Always highlight move targets
@@ -289,7 +300,7 @@ class Turnkeeper(Sprite):
 
     def draw(self):
         # Show who's turn it is
-        drawText("Player " + str(self.currentPlayerNumber) + "'s turn", self.x, self.y, pygamehelper.hugeFont, green)
+        drawText("Player " + str(self.currentPlayerNumber) + "'s turn", self.x, self.y, pygamehelper.hugeFont, self.getCurrentPlayer().playerColour)
         # Show scores
         self.drawScore(1, 575, 30)
         self.drawScore(2, 575, 50)
@@ -304,7 +315,7 @@ class Turnkeeper(Sprite):
 
     # grab the object which holds scores for the current player
     def getCurrentPlayer(self):
-        return getPlayer(self.currentPlayerNumber)
+        return self.getPlayer(self.currentPlayerNumber)
 
     def getPlayer(self, playerNumber):
         return self.playerScores[playerNumber]
@@ -332,7 +343,8 @@ class MyGameLoop(GameLoop):
         # Initial board setup
         pygamehelper.addSprite(GridPiece(self.gridHelper, 0,0, self.turnKeeper.getPlayer(1)))
         pygamehelper.addSprite(GridPiece(self.gridHelper, 1,1, self.turnKeeper.getPlayer(1)))
-        pygamehelper.addSprite(GridPiece(self.gridHelper, 2,2, self.turnKeeper.getPlayer(2)))
+        pygamehelper.addSprite(GridPiece(self.gridHelper, 5,1, self.turnKeeper.getPlayer(2)))
+        pygamehelper.addSprite(GridPiece(self.gridHelper, 5,2, self.turnKeeper.getPlayer(2)))
 
     #
     # TODO
@@ -353,8 +365,11 @@ class MyGameLoop(GameLoop):
                 for clickedSprite in clickedSprites:
                     clickedSprite.onClick()
 
+    def getCurrentPlayer(self):
+        return self.turnKeeper.getCurrentPlayer()
+
     def registerScoreForCurrentPlayer(self, scoreValue):
-        self.turnKeeper.getCurrentPlayer().registerScore(scoreValue)
+        self.getCurrentPlayer().registerScore(scoreValue)
 
     def endTurn(self):
         self.turnKeeper.endTurn()
