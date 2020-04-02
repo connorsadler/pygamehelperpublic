@@ -134,9 +134,13 @@ class GridPiece(GridPieceBase):
         # Show move targets - these are the spaces this piece can possibly move to
         self.moveTargets = [ ]
         self.addMoveTargetMaybe(self.rowIdx - 1, self.columnIdx)
+        self.addMoveTargetMaybe(self.rowIdx - 1, self.columnIdx - 1)
+        self.addMoveTargetMaybe(self.rowIdx - 1, self.columnIdx + 1)
         self.addMoveTargetMaybe(self.rowIdx + 1, self.columnIdx)
         self.addMoveTargetMaybe(self.rowIdx + 1, self.columnIdx - 1)
         self.addMoveTargetMaybe(self.rowIdx + 1, self.columnIdx + 1)
+        self.addMoveTargetMaybe(self.rowIdx, self.columnIdx - 1)
+        self.addMoveTargetMaybe(self.rowIdx, self.columnIdx + 1)
 
     def addMoveTargetMaybe(self, rowIdx, columnIdx):
         if self.gridHelper.isCellOnGrid(rowIdx, columnIdx):
