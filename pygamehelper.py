@@ -413,6 +413,9 @@ def calcAngle(dx, dy):
 def addVectors(v1, v2):
     return (v1[0] + v2[0], v1[1] + v2[1])
 
+def flipYCoord(point):
+    return (point[0], -point[1])
+
 # Returns a collection of items:
 # 1 top edge
 # 2 bottom edge
@@ -558,6 +561,10 @@ def displayUpdate():
 def addSprite(sprite):
     sprites.append(sprite)
 
+def addSpriteBefore(sprite, beforeSprite):
+    index = sprites.index(beforeSprite)
+    sprites.insert(index, sprite)
+
 # deprecated name - please use moveAndDrawAllSprites
 def drawAndMoveAllSprites():
     moveAndDrawAllSprites()
@@ -567,6 +574,9 @@ def drawRect(rect, colour, width=0):
 
 def drawPoint(point, colour):
     drawRect(Rect(point[0],point[1],3,3), colour)
+
+def drawLine(fromPoint, toPoint, colour):
+    pygame.draw.line(gameDisplay, colour, fromPoint, toPoint)
 
 #
 # Draws and moves all sprites

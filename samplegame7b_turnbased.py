@@ -84,6 +84,25 @@ class GridHelper(Sprite):
                 return gridPiece
         return None
 
+
+class HighlightDrawer:
+    def __init__(self, animated):
+        self.counter = 1
+        self.animated = animated
+
+    def move(self):
+        self.counter += 1
+        if self.counter >= 100:
+            self.counter = 1
+
+    def draw(self, sprite):
+        if self.animated:
+            #thickness = max(1, round(self.counter % 60 / 8))
+            thickness = round((self.counter / 10) % 5 + 1) * 2
+        else:
+            thickness = 3
+        drawRect(sprite.getBoundingRect(), sprite.highlightColour, thickness)
+
 #
 # GridPieceBase
 # Exists in a particular cell of a grid
@@ -99,16 +118,18 @@ class GridPieceBase(Sprite):
         self.rowIdx = rowIdx
         self.columnIdx = columnIdx
         self.highlight = False
-        self.highlightColour = green
+        self.highlightColour = red
+        self.highlightDrawer = HighlightDrawer(False)
 
     def move(self):
         cellPoint = self.gridHelper.getCellPoint(self.rowIdx, self.columnIdx)
         self.x = cellPoint[0]
         self.y = cellPoint[1]
+        self.highlightDrawer.move()
 
     def draw(self):
         if self.highlight:
-            drawRect(self.getBoundingRect(), self.highlightColour, 4)
+            self.highlightDrawer.draw(self)
 
     def onClick(self):
         pass
@@ -136,6 +157,9 @@ class GridPiece(GridPieceBase):
         self.mover = None
         # This is the PlayerScore object for the player
         self.player = player
+        # 
+        self.highlightDrawer = HighlightDrawer(True)
+        self.highlightColour = yellow
 
     def move(self):
         if self.mover == None:
@@ -192,7 +216,7 @@ class GridPiece(GridPieceBase):
         # OK to add
         moveTarget = MoveTarget(self, self.gridHelper, rowIdx, columnIdx, moveIsCapture, pieceAlreadyThere)
         self.moveTargets.append(moveTarget)
-        addSprite(moveTarget)
+        addSpriteBefore(moveTarget, self)
 
     def clearHighlight(self):
         super().clearHighlight()
@@ -376,7 +400,7 @@ class MyGameLoop(GameLoop):
     def endTurn(self):
         self.turnKeeper.endTurn()
 
-#pygamehelper.debug = False
+pygamehelper.debug = False
 
 # Run game loop
 game = MyGameLoop()
