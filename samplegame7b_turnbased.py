@@ -364,6 +364,8 @@ class MyGameLoop(GameLoop):
             if len(clickedSprites) > 0:
                 for clickedSprite in clickedSprites:
                     clickedSprite.onClick()
+            else:
+                self.gridHelper.clearHighlights()
 
     def getCurrentPlayer(self):
         return self.turnKeeper.getCurrentPlayer()
