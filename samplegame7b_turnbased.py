@@ -84,9 +84,13 @@ class GridHelper(Sprite):
                 return gridPiece
         return None
 
-
+#
+# Draws highlight box
+# Can be animated i.e. growing and shrinking
+#
 class HighlightDrawer:
-    def __init__(self, animated):
+    def __init__(self, highlightColour, animated):
+        self.highlightColour = highlightColour
         self.counter = 1
         self.animated = animated
 
@@ -97,11 +101,15 @@ class HighlightDrawer:
 
     def draw(self, sprite):
         if self.animated:
+            # TODO: Need a better algorithm for this growing and shrinking - can experiment in samplegame0_playground.py
             #thickness = max(1, round(self.counter % 60 / 8))
             thickness = round((self.counter / 10) % 5 + 1) * 2
         else:
             thickness = 3
-        drawRect(sprite.getBoundingRect(), sprite.highlightColour, thickness)
+        drawRect(sprite.getBoundingRect(), self.highlightColour, thickness)
+
+    def reset(self):
+        self.counter = 0
 
 #
 # GridPieceBase
@@ -118,8 +126,7 @@ class GridPieceBase(Sprite):
         self.rowIdx = rowIdx
         self.columnIdx = columnIdx
         self.highlight = False
-        self.highlightColour = red
-        self.highlightDrawer = HighlightDrawer(False)
+        self.highlightDrawer = HighlightDrawer(red, False)
 
     def move(self):
         cellPoint = self.gridHelper.getCellPoint(self.rowIdx, self.columnIdx)
@@ -157,9 +164,8 @@ class GridPiece(GridPieceBase):
         self.mover = None
         # This is the PlayerScore object for the player
         self.player = player
-        # 
-        self.highlightDrawer = HighlightDrawer(True)
-        self.highlightColour = yellow
+        # Animated highlight - if a piece becomes highlighted it is the selected piece
+        self.highlightDrawer = HighlightDrawer(yellow, True)
 
     def move(self):
         if self.mover == None:
@@ -170,9 +176,15 @@ class GridPiece(GridPieceBase):
                 # End move animation
                 self.mover = None
 
+    def isCurrentPlayersPiece(self):
+        return game.getCurrentPlayer() == self.player
+
     def draw(self):
         super().draw()
         drawText("X", self.x + 15, self.y + 12, pygamehelper.largeFont, self.player.playerColour)
+        # if on current player's team, show a light highlight of the player's colour
+        if self.isCurrentPlayersPiece():
+            drawRect(self.getBoundingRect(), self.player.playerColour, 3)
 
     def onClick(self):
         print("click")
@@ -180,7 +192,7 @@ class GridPiece(GridPieceBase):
         # Only allow click on current player's pieces, and on 'move targets'
         # This has the good side effect that if you click on a MoveTarget and it has a piece to be capture on that same square, the onClick will fire for both and
         # this check for the piece to be captured will mean it will do nothing, so the MoveTarget onClick will only fire
-        if game.getCurrentPlayer() != self.player:
+        if not self.isCurrentPlayersPiece():
             print("Different players piece, no click allowed")
             return
 
@@ -188,6 +200,7 @@ class GridPiece(GridPieceBase):
         self.gridHelper.clearHighlights()
         # Highlight this piece
         self.highlight = True
+        self.highlightDrawer.reset()
         # Show move targets - these are the spaces this piece can possibly move to
         self.moveTargets = [ ]
         self.addMoveTargetMaybe(self.rowIdx - 1, self.columnIdx)
@@ -273,7 +286,7 @@ class MoveTarget(GridPieceBase):
         # Whether the move is a capture move i.e. taking an opponent's piece
         self.moveIsCapture = moveIsCapture
         if self.moveIsCapture:
-            self.highlightColour = yellow
+            self.highlightDrawer.highlightColour = yellow
         self.pieceToCapture = pieceToCapture
 
     def onClick(self):
