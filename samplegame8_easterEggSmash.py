@@ -74,17 +74,39 @@ class Hammer(SpriteWithImage):
         self.angle = 0
         self.angleChange = 1
 
+        # whether we're swinging the hammer
+        self.swinging = False
+
     def move(self):
-        self.angle += self.angleChange
-        if self.angle > 20 or self.angle < -20:
-            self.angleChange = self.angleChange * -1
+        if self.swinging:
+            # swing the mighty hammer of justice
+            self.angle += self.angleChange
+            if self.angle < -90:
+                self.angleChange = self.angleChange * -1
+            elif self.angle > -10:
+                self.angleChange = self.angleChange * -1
+                self.swinging = False
+                self.angleChange = 1
+            
+        else:
+            # wobble the hammer around
+            self.angle += self.angleChange
+            if self.angle > 20 or self.angle < -20:
+                self.angleChange = self.angleChange * -1
 
     def onClick(self):
-        pass
+        print("onClick of hammer")
+        if self.swinging:
+            return
+        
+        self.swinging = True
+        self.angleChange = -5
+        self.angle = -11
+
 
     def moveTo(self, pos):
-        self.x = pos[0] + 20
-        self.y = pos[1] + 20
+        self.x = pos[0]
+        self.y = pos[1]
 
 #
 # Game loop logic
@@ -116,7 +138,11 @@ class MyGameLoop(GameLoop):
     def onEvent(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             clickPosition = pygame.mouse.get_pos()
-            clickedSprites = findSprites(clickPosition)
+
+            # need to adjust this position as hammer
+            clickPositionModified = (clickPosition[0]-50, clickPosition[1]-50)
+
+            clickedSprites = findSprites(clickPositionModified)
             if len(clickedSprites) > 0:
                 for clickedSprite in clickedSprites:
                     clickedSprite.onClick()
