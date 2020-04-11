@@ -63,6 +63,9 @@ class Sprite():
         if not hasattr(self, "imageDrawingHelper"):
             self.imageDrawingHelper = None
 
+        # Clip area to use when actually drawing the image
+        self.clipArea = None
+
     def setAngle(self, newAngle):
         self.angle = newAngle
 
@@ -233,7 +236,7 @@ class SpriteImageDrawingHelper():
 
     def draw(self):
         # draw the image, centred on x,y - so that any rotation looks good
-        drawImageCentered(self.imageRotated, self.sprite.x, self.sprite.y)
+        drawImageCentered(self.imageRotated, self.sprite.x, self.sprite.y, self.sprite.clipArea)
 
 # Try to find an image file given a base name e.g. invader.jpg
 # We can try whatever prefixes we like
@@ -359,12 +362,17 @@ def calcBoundingRectCenteredOnXY(x, y, width, height):
     rect = pygame.Rect(topLeftX, topLeftY, width, height)
     return rect
 
-def drawImageCentered(image, x, y):
+# allows optional clip area
+def drawImageCentered(image, x, y, clipArea):
     halfOfImageWidth = image.get_size()[0] / 2
     halfOfImageHeight = image.get_size()[1] / 2
+    if clipArea != None:
+        halfOfImageWidth = clipArea.width / 2
+        halfOfImageHeight = clipArea.height / 2
+
     topLeft = (x - halfOfImageWidth, y - halfOfImageHeight)
     # draw image
-    gameDisplay.blit(image,topLeft)
+    gameDisplay.blit(image,topLeft, clipArea)
 
 # Resolve an angle in degress to a dx, dy value
 # The result is like a vector - speed is the length of the vector
