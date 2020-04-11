@@ -46,6 +46,8 @@ class Sprite():
         self.y = y
         self.width = width
         self.height = height
+        # for debugging
+        self.debugDrawBoundingRect = False
         # init this here to setup an initial value - sometimes when a sprite is added by another sprite at a certain point in the sequence, it won't have had it's moveDone called
         self.boundingRect = pygame.Rect(self.x, self.y, self.width, self.height)
         # to kill a sprite (i.e. remote it from the game) you can either:
@@ -129,6 +131,8 @@ class Sprite():
 
     def draw(self):
         if self.imageDrawingHelper:
+            if self.debugDrawBoundingRect:
+                pygame.draw.rect(gameDisplay, white, self.boundingRect)
             # If there's a drawing delegate, we use it - this can draw a rotated image for example
             self.imageDrawingHelper.draw()
         else:
@@ -366,13 +370,13 @@ def calcBoundingRectCenteredOnXY(x, y, width, height):
 def drawImageCentered(image, x, y, clipArea):
     halfOfImageWidth = image.get_size()[0] / 2
     halfOfImageHeight = image.get_size()[1] / 2
-    if clipArea != None:
-        halfOfImageWidth = clipArea.width / 2
-        halfOfImageHeight = clipArea.height / 2
 
     topLeft = (x - halfOfImageWidth, y - halfOfImageHeight)
     # draw image
     gameDisplay.blit(image,topLeft, clipArea)
+
+def drawImage(image, x, y, clipArea):
+    gameDisplay.blit(image,(x, y), clipArea)
 
 # Resolve an angle in degress to a dx, dy value
 # The result is like a vector - speed is the length of the vector
@@ -533,6 +537,8 @@ debug = True
 gameTick = 0
 # This will be the GameLoop subclass instance - you can use "pygamehelper.game" to use this from anywhere e.g. inside a Sprite's code
 game = None
+# Change this to help debugging e.g. pygamehelper.fps = 10
+fps = 60
 
 def drawText(text, x, y, font, colour):
     t = font.render(text, True, colour)
@@ -667,10 +673,7 @@ class GameLoop():
             # show the screen area on the display
             displayUpdate()
             # make the game run at 60 fps
-            clock.tick(60)
-
-
-
+            clock.tick(fps)
 
 print("DigiLocal pygamehelper.py has been included")
 

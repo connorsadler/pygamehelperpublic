@@ -25,7 +25,7 @@ class Hole(SpriteWithImage):
     def move(self):
         if self.egg == None:
             if random.randint(1,10000) > 9950:
-                self.egg = Egg(self.x, self.y - 5, self)
+                self.egg = Egg(self.x, self.y + 20, self)
                 pygamehelper.addSprite(self.egg)
 
     def eggDied(self):
@@ -48,14 +48,14 @@ class Egg(SpriteWithImage):
     def move(self):
         if self.poppingUp:
             self.y = self.y - 0.5
-            if self.y <= self.startingy - 30:
+            if self.y <= self.startingy - 50:
                 self.poppingUp = False
         else:
             self.y = self.y + 0.5
             if self.y == self.startingy:
                 self.die()
 
-        self.clipArea = Rect(0,0, self.width, 2 * (self.startingy - self.y))
+        self.clipArea = Rect(0,0, self.width,  + (self.startingy - self.y))
 
     def die(self):
         self.dead = True
@@ -154,6 +154,7 @@ class MyGameLoop(GameLoop):
 
 
 pygamehelper.debug = False
+#pygamehelper.fps = 2
 
 # Run game loop
 MyGameLoop().runGameLoop()
