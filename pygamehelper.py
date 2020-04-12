@@ -168,6 +168,13 @@ class Sprite():
         else:
             print("changeCostume called with no imageDrawingHelper, costumeIndex: " + str(costumeIndex))
 
+    # Only works if we have a self.imageDrawingHelper
+    def nextCostume(self):
+        if self.imageDrawingHelper:
+            self.imageDrawingHelper.nextCostume()
+        else:
+            print("nextCostume called with no imageDrawingHelper")
+
 #
 # This is reduced in size now and could maybe be deleted
 #
@@ -185,14 +192,14 @@ class SpriteImageDrawingHelper():
     # imageFilenameOrFilenamesOrImageHandler can be either:
     # - an image file name
     # - a list of image file names (different costumes)
-    # - a custom ImageHandler
+    # - a custom ImageHandlerBase
     def __init__(self, sprite, imageFilenameOrFilenamesOrImageHandler):
         super().__init__()
 
         self.sprite = sprite
 
         # Create an imageHandler or use the custom one supplied
-        if isinstance(imageFilenameOrFilenamesOrImageHandler, ImageHandler):
+        if isinstance(imageFilenameOrFilenamesOrImageHandler, ImageHandlerBase):
             self.imageHandler = imageFilenameOrFilenamesOrImageHandler
         else:
             self.imageHandler = ImageHandler(imageFilenameOrFilenamesOrImageHandler)
@@ -207,6 +214,9 @@ class SpriteImageDrawingHelper():
 
     def changeCostume(self, costumeIndex):
         self.imageHandler.changeCostume(costumeIndex)
+
+    def nextCostume(self):
+        self.imageHandler.nextCostume()
 
     def addExtraSpriteImagePreparer(self, extraSpriteImagePreparer):
         self.extraSpriteImagePreparer = extraSpriteImagePreparer
@@ -265,26 +275,10 @@ def resolveImageFile(imageFilename):
     print("Cannot resolve imageFilename: " + imageFilename)
     raise NameError("Cannot resolve imageFilename: " + imageFilename)
 
-# Loads and contains one or more images to use for a SpriteWithImage
-# Basically a list of costumes
-class ImageHandler():
-    def __init__(self, imageFilenameOrFilenames):
-        
-        # We are either given one image name or multiple - check which we're given
-        if isinstance(imageFilenameOrFilenames, str):
-            spriteImageNames = [ imageFilenameOrFilenames ]
-        else:
-            spriteImageNames = imageFilenameOrFilenames
-        
-        # Load all the image names and store images
+class ImageHandlerBase:
+    def __init__(self):
         self.spriteImages = []
-        for spriteImageName in spriteImageNames:
-            spriteImageNameResolved = resolveImageFile(spriteImageName)
-            image = pygame.image.load(spriteImageNameResolved)
-            self.spriteImages.append(image)
-
-        # default to first image
-        self.changeCostume(0)
+        self.costumeIndex = -1
 
     def getSpriteImage(self):
         return self.spriteImage
@@ -293,6 +287,58 @@ class ImageHandler():
     def changeCostume(self, costumeIndex):
         # TODO: What if costumeIndex is invalid?
         self.spriteImage = self.spriteImages[costumeIndex]
+        self.costumeIndex = costumeIndex
+
+    # Moves to next costume. If we have no next costume then it goes back to the first one
+    def nextCostume(self):
+        if self.costumeIndex == -1:
+            self.changeCostume(0)
+        elif self.costumeIndex + 1 == len(self.spriteImages):
+            self.changeCostume(0)
+        else:
+            self.changeCostume(self.costumeIndex + 1)
+
+# Loads and contains one or more images to use for a SpriteWithImage
+# Basically a list of costumes
+class ImageHandler(ImageHandlerBase):
+    def __init__(self, imageFilenameOrFilenames):
+        super().__init__()
+
+        # We are either given one image name or multiple - check which we're given
+        if isinstance(imageFilenameOrFilenames, str):
+            spriteImageNames = [ imageFilenameOrFilenames ]
+        else:
+            spriteImageNames = imageFilenameOrFilenames
+        
+        # Load all the image names and store images
+        for spriteImageName in spriteImageNames:
+            spriteImageNameResolved = resolveImageFile(spriteImageName)
+            image = pygame.image.load(spriteImageNameResolved)
+            self.spriteImages.append(image)
+
+        # default to first image
+        self.changeCostume(0)
+
+# Sprite sheet ImageHandler
+# Uses a large image and picks out the costumes from parts of that large image
+class SpriteSheetImageHandler(ImageHandlerBase):
+    def __init__(self, spriteSheetImageName):
+        super().__init__()
+        spriteSheetImageNameResolved = resolveImageFile(spriteSheetImageName)
+        self.spriteSheetImage = pygame.image.load(spriteSheetImageNameResolved)
+
+        # sub images
+        # x = 70
+        # y = 28
+        x = 20
+        y = 250
+        for i in range(10):
+            self.spriteImages.append(self.spriteSheetImage.subsurface(Rect(x,y,67,67)))
+            #x += 68
+            x += 77
+
+        # default to first image
+        self.changeCostume(0)
 
 #
 # Has a custom transparent Surface that you can paint a sprite image onto in code e.g. an Asteroid in Asteroids

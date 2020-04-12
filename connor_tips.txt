@@ -18,9 +18,10 @@ Other good ones:
     F12                     - Go to Definition (aka "Go in")
     Alt + Left              - Go Back (aka "Go back out")
                               You need to map this keyboard shortcut yourself I think
-
     Ctrl + PageUp/Down      - Move between open files
+    Ctrl + PageUp           - Open file by name
 
+    Ctrl + Shift + G -> B   - Git Line annotations (See changes for current file)
 
     Ctrl + Shift + E        - Go to files list tab on left
     Ctrl + Shift + G        - Go to Source Control (Git) tab on left  (GitLens seems to interfere with this one though)
@@ -29,7 +30,6 @@ Other good ones:
 
     Ctrl + K -> Ctrl + S    - Open Keyboard Shortcuts
 
-    Ctrl + Shift + G -> B   - Git Line annotations
 
 GitLens
 -------

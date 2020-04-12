@@ -109,6 +109,44 @@ class Hammer(SpriteWithImage):
         self.y = pos[1]
 
 #
+# Counter
+# Accepts 'tick' events - usually every frame - and calls a particular specified method ("onCountMethod") every "countUpTo" frames
+# Basically allows you to slow down some logic by running it every N frames
+#
+class Counter:
+    def __init__(self, countUpTo, onCountMethod):
+        self.count = 0
+        self.countUpTo = countUpTo
+        self.onCountMethod = onCountMethod
+
+    def tick(self):
+        self.count += 1
+        if self.count >= self.countUpTo:
+            self.onCountMethod()
+            self.count = 0
+
+#
+# Explosion
+# 
+class Explosion(SpriteWithImage):
+    def __init__(self, x, y):
+        super().__init__(x, y, SpriteSheetImageHandler("images/bash2.png"))
+        self.animationCounter = Counter(50, self.onAnimationCount)
+
+    def onAnimationCount(self):
+        print("onAnimationCount")
+        self.nextCostume()
+
+    def move(self):
+        self.animationCounter.tick()
+
+    def onClick(self):
+        pass
+
+    def moveTo(self, pos):
+        pass
+
+#
 # Game loop logic
 #
 class MyGameLoop(GameLoop):
@@ -126,6 +164,8 @@ class MyGameLoop(GameLoop):
 
         self.hammer = Hammer(400, 400)
         pygamehelper.addSprite(self.hammer)
+
+        pygamehelper.addSprite(Explosion(500,500))
 
     #
     # TODO
