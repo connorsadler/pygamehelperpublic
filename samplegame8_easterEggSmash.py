@@ -16,6 +16,8 @@ pygamehelper.initPygame()
 
 #
 # Hole
+# - does not move
+# - randomly spawns a linked Egg which pops up
 # 
 class Hole(SpriteWithImage):
     def __init__(self, x, y):
@@ -37,6 +39,9 @@ class Hole(SpriteWithImage):
 
 #
 # Egg
+# - pops up out of a linked Hole
+# - then pops back down again
+# - we use clipArea to only draw part of the egg, so it looks like it's coming up out of the hole
 # 
 class Egg(SpriteWithImage):
     def __init__(self, x, y, owningHole):
@@ -54,7 +59,7 @@ class Egg(SpriteWithImage):
             self.y = self.y + 0.5
             if self.y == self.startingy:
                 self.die()
-
+        # we use clipArea to only draw part of the egg, so it looks like it's coming up out of the hole
         self.clipArea = Rect(0,0, self.width,  + (self.startingy - self.y))
 
     def die(self):
@@ -66,6 +71,8 @@ class Egg(SpriteWithImage):
 
 #
 # Hammer
+# - Moves around following the mouse cursor
+# - TODO: Bash the eggs
 # 
 class Hammer(SpriteWithImage):
     def __init__(self, x, y):
@@ -103,27 +110,9 @@ class Hammer(SpriteWithImage):
         self.angleChange = -5
         self.angle = -11
 
-
     def moveTo(self, pos):
         self.x = pos[0]
         self.y = pos[1]
-
-#
-# Counter
-# Accepts 'tick' events - usually every frame - and calls a particular specified method ("onCountMethod") every "countUpTo" frames
-# Basically allows you to slow down some logic by running it every N frames
-#
-class Counter:
-    def __init__(self, countUpTo, onCountMethod):
-        self.count = 0
-        self.countUpTo = countUpTo
-        self.onCountMethod = onCountMethod
-
-    def tick(self):
-        self.count += 1
-        if self.count >= self.countUpTo:
-            self.onCountMethod()
-            self.count = 0
 
 #
 # Explosion

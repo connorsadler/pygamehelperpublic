@@ -328,13 +328,16 @@ class SpriteSheetImageHandler(ImageHandlerBase):
         self.spriteSheetImage = pygame.image.load(spriteSheetImageNameResolved)
 
         # sub images
-        # x = 70
-        # y = 28
+        # TODO: Do this properly - not quite sure how to do it
+        x = 70
+        y = 28
+        for i in range(10):
+            self.spriteImages.append(self.spriteSheetImage.subsurface(Rect(x,y,67,67)))
+            x += 68
         x = 20
         y = 250
         for i in range(10):
             self.spriteImages.append(self.spriteSheetImage.subsurface(Rect(x,y,67,67)))
-            #x += 68
             x += 77
 
         # default to first image
@@ -351,6 +354,24 @@ class CustomDrawingImageHandler(ImageHandler):
 
     def getSpriteImage(self):
         return self.spriteImage
+
+#
+# Counter
+# Animation helper - to show down animation
+# Accepts 'tick' events - usually every frame - and calls a particular specified method ("onCountMethod") every "countUpTo" frames
+# Basically allows you to slow down some logic by running it every N frames
+#
+class Counter:
+    def __init__(self, countUpTo, onCountMethod):
+        self.count = 0
+        self.countUpTo = countUpTo
+        self.onCountMethod = onCountMethod
+
+    def tick(self):
+        self.count += 1
+        if self.count >= self.countUpTo:
+            self.onCountMethod()
+            self.count = 0
 
 
 # Will kill the sprite if it goes off screen
