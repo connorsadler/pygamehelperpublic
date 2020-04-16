@@ -442,7 +442,7 @@ def drawImageCentered(image, x, y, clipArea):
     # draw image
     gameDisplay.blit(image,topLeft, clipArea)
 
-def drawImage(image, x, y, clipArea):
+def drawImage(image, x, y, clipArea = None):
     gameDisplay.blit(image,(x, y), clipArea)
 
 def rectFromPoints(p1, p2):

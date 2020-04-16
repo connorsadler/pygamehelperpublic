@@ -15,6 +15,31 @@ pygamehelper.initPygame()
 #
 
 #
+# Background Image
+#
+class BackgroundImage(Sprite):
+    def __init__(self):
+        super().__init__(0, 0, 50, 50)
+
+        spriteImageName = "images/bash2.png"
+        spriteImageNameResolved = resolveImageFile(spriteImageName)
+        self.image = pygame.image.load(spriteImageNameResolved)
+        self.zoom = 1
+        self.zoomedImage = None
+
+    def move(self):
+        pass
+
+    def draw(self):
+        if self.zoomedImage == None:
+            self.zoomedImage = pygame.transform.rotozoom(self.image, 0, self.zoom)
+        drawImage(self.zoomedImage, 0, 0)
+
+    def setZoom(self, zoom):
+        self.zoom = zoom
+        self.zoomedImage = None
+
+#
 # SelectionTool
 # 
 class SelectionTool(Sprite):
@@ -30,6 +55,8 @@ class SelectionTool(Sprite):
         self.dragMovingRectOffset = None
         self.dragMovingRectSize = None
 
+        self.zoom = 1
+
     def move(self):
         pass
 
@@ -42,12 +69,20 @@ class SelectionTool(Sprite):
     def draw(self):
         if self.dragStartPoint != None and self.dragEndPoint != None:
             rect = self.getRectFromPoint()
-            drawRect(rect, white, 2)
-            drawText(str(rect.topleft) + " size " + str(rect.width) + "," + str(rect.height), self.dragStartPoint[0]+3, self.dragStartPoint[1]+3, pygamehelper.mediumFont, white)
+            rectZoomed = zoomHelper.rectWorldToScreen(rect)
+            # TODO: Make rect line thicker when you zoom in
+            drawRect(rectZoomed, white, 2)
+            drawText(str(rect.topleft) + " size " + str(rect.width) + "," + str(rect.height), rectZoomed[0]+3, rectZoomed[1]+3, pygamehelper.mediumFont, white)
 
     def onClick(self, event):
-        clickPosition = pygame.mouse.get_pos()
 
+        # dragging - either drawing a rectangle or moving it around
+        if event.type == pygame.MOUSEMOTION or ((event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP) and event.button == 1):
+            self.dragHandling(event)
+
+    # dragging - either drawing a rectangle or moving it around
+    def dragHandling(self, event):
+        clickPosition = pygame.mouse.get_pos()
         if event.type == pygame.MOUSEBUTTONDOWN:
             rect = self.getRectFromPoint()
             if rect != None and rect.collidepoint(clickPosition):
@@ -70,6 +105,44 @@ class SelectionTool(Sprite):
             self.dragDrawingRect = False
             self.dragMovingRect = False
 
+    def setZoom(self, zoom):
+        self.zoom = zoom
+
+class ZoomHelper:
+    def __init__(self):
+        # "zoom" is the transform from world to screen
+        # so if zoom == 1.5 then things are 1.5 times bigger onscreen than in the world
+        self.zoom = 1
+
+    def setZoom(self, zoom):
+        self.zoom = zoom
+
+    def valueTransform(self, value, transformBy):
+        return value * transformBy
+    def valueWorldToScreen(self, value):
+        return self.valueTransform(value, self.zoom)
+    def valueScreenToWorld(self, value):
+        return self.valueTransform(value, 1.0 / self.zoom)
+
+    def pointTransform(self, p, transformBy):
+        return (p[0] * transformBy, p[1] * transformBy)
+    def pointWorldToScreen(self, p):
+        return self.pointTransform(p, self.zoom)
+    def pointScreenToWorld(self, p):
+        return self.pointTransform(p, 1.0 / self.zoom)
+
+    def rectTransform(self, rect, transformBy):
+        resultTopLeft = self.pointTransform((rect[0], rect[1]), transformBy)
+        resultWidth = self.valueTransform(rect[2], transformBy)
+        resultHeight = self.valueTransform(rect[3], transformBy)
+        return pygame.Rect(resultTopLeft[0], resultTopLeft[1], resultWidth, resultHeight)
+    def rectWorldToScreen(self, rect):
+        return self.rectTransform(rect, self.zoom)
+    def rectScreenToWorld(self, rect):
+        return self.rectTransform(rect, 1.0 / self.zoom)
+
+
+zoomHelper = ZoomHelper()
 
 #
 # Game loop logic
@@ -83,8 +156,12 @@ class MyGameLoop(GameLoop):
         # Create any initial instances of your sprites here
         #
         # Create
+        self.backgroundImage = BackgroundImage()
+        pygamehelper.addSprite(self.backgroundImage)
         self.selectionTool = SelectionTool(50, 50)
         pygamehelper.addSprite(self.selectionTool)
+
+        self.zoom = 1
 
     #
     # TODO
@@ -97,6 +174,23 @@ class MyGameLoop(GameLoop):
     def onEvent(self, event):
         if event.type == pygame.MOUSEMOTION or event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP:
             self.selectionTool.onClick(event)
+            self.onClick(event)
+
+    def setZoom(self, zoom):
+        self.zoom = zoom
+        print("Zoom is now: " + str(self.zoom))
+        self.backgroundImage.setZoom(zoom)
+        self.selectionTool.setZoom(zoom)
+
+        zoomHelper.setZoom(self.zoom)
+
+    def onClick(self, event):
+        # scroll wheel click?
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 4 or event.button == 5:
+                zoomBy = 0.3 if event.button == 4 else -0.3
+                self.setZoom(self.zoom + zoomBy)
+
 
 pygamehelper.debug = False
 #pygamehelper.fps = 2
