@@ -34,6 +34,19 @@ class BackgroundImage(Sprite):
         if self.zoomedImage == None:
             self.zoomedImage = pygame.transform.rotozoom(self.image, 0, self.zoom)
         drawImage(self.zoomedImage, 0, 0)
+        self.drawGrid()
+
+    def drawGrid(self):
+        gridSizeWorld = 100
+        gridSizeScreen = zoomHelper.valueWorldToScreen(gridSizeWorld)
+        # print("gridSizeWorld: " + str(gridSizeWorld))
+        # print("gridSizeScreen: " + str(gridSizeScreen))
+        for x in range(0, screenRect.width, int(gridSizeScreen)):
+            # print("  x: " + str(x))
+            drawLine((x, 0), (x, screenRect.height), green)
+        for y in range(0, screenRect.height, int(gridSizeScreen)):
+            # print("  y: " + str(y))
+            drawLine((0, y), (screenRect.width, y), green)
 
     def setZoom(self, zoom):
         self.zoom = zoom
@@ -82,7 +95,10 @@ class SelectionTool(Sprite):
 
     # dragging - either drawing a rectangle or moving it around
     def dragHandling(self, event):
-        clickPosition = pygame.mouse.get_pos()
+        # Find where user clicked in the WORLD coordinate space
+        clickPositionScreen = pygame.mouse.get_pos()
+        clickPosition = zoomHelper.pointScreenToWorld(clickPositionScreen)
+
         if event.type == pygame.MOUSEBUTTONDOWN:
             rect = self.getRectFromPoint()
             if rect != None and rect.collidepoint(clickPosition):
@@ -108,6 +124,13 @@ class SelectionTool(Sprite):
     def setZoom(self, zoom):
         self.zoom = zoom
 
+#
+# ZoomHelper
+# Helps with zooming - does the mapping from world to screen coordinates and vice versa
+# All our coords such as rectangles etc will be in WORLD coords, and they will be mapped to different
+# screen coords depending on the zoom level
+# TODO: Move to pygamehelper.py!
+# 
 class ZoomHelper:
     def __init__(self):
         # "zoom" is the transform from world to screen
