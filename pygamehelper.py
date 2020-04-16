@@ -445,6 +445,12 @@ def drawImageCentered(image, x, y, clipArea):
 def drawImage(image, x, y, clipArea):
     gameDisplay.blit(image,(x, y), clipArea)
 
+def rectFromPoints(p1, p2):
+    result = pygame.Rect(p1[0], p1[1], p2[0]-p1[0], p2[1]-p1[1])
+    # TODO: Maybe add this in - This will flip the width or height of a rectangle if it has a negative size. The rectangle will remain in the same place, with only the sides swapped.
+    #result.normalize()
+    return result
+
 # Resolve an angle in degress to a dx, dy value
 # The result is like a vector - speed is the length of the vector
 # An angle of 0 means pointing "North" which equates to a result vector (0,-1) * speed
@@ -598,6 +604,7 @@ clock = None
 defaultFont = None
 largeFont = None
 mediumFont = None
+mediumSmallFont = None
 hugeFont = None
 sprites = []
 debug = True
@@ -619,12 +626,14 @@ def initPygame():
     global defaultFont
     global largeFont
     global mediumFont
+    global mediumSmallFont
     global hugeFont
     pygame.init()
     gameDisplay = pygame.display.set_mode((display_width,display_height))
     print("gameDisplay is now: " + str(gameDisplay))
     clock = pygame.time.Clock()
     defaultFont = pygame.font.SysFont(None, 12)
+    mediumSmallFont = pygame.font.SysFont(None, 14)
     mediumFont = pygame.font.SysFont(None, 18)
     largeFont = pygame.font.SysFont(None, 36)
     hugeFont = pygame.font.SysFont(None, 72)
