@@ -72,6 +72,8 @@ class SelectionTool(Sprite):
 
         # panning
         self.panning = False
+        self.panningStartClickPositionScreen = None
+        self.panningStartOrigin = None
 
     def move(self):
         pass
@@ -110,17 +112,22 @@ class SelectionTool(Sprite):
         clickPositionWorld = zoomHelper.pointScreenToWorld(clickPositionScreen)
 
         if event.type == pygame.MOUSEBUTTONDOWN:
-            # TODO
-            print("todo")
-            zoomHelper.setOrigin(clickPositionWorld)
+            print("pan start")
+            self.panning = True
+            self.panningStartClickPositionScreen = clickPositionScreen
+            self.panningStartOrigin = zoomHelper.getOrigin()
+            print("self.panningStartClickPositionScreen: " + str(self.panningStartClickPositionScreen))
         elif event.type == pygame.MOUSEMOTION:
-            # TODO
-            print("todo")
-            pass
+            print("panning - setting origin")
+            diffBetweenCurrentMousePosAndStartPanPos_screen = (clickPositionScreen[0] - self.panningStartClickPositionScreen[0], clickPositionScreen[1] - self.panningStartClickPositionScreen[1])
+            print("diffBetweenCurrentMousePosAndStartPanPos_screen: " + str(diffBetweenCurrentMousePosAndStartPanPos_screen))
+            diff_world = (zoomHelper.valueScreenToWorld(diffBetweenCurrentMousePosAndStartPanPos_screen[0]), zoomHelper.valueScreenToWorld(diffBetweenCurrentMousePosAndStartPanPos_screen[1]))
+            zoomHelper.setOrigin((self.panningStartOrigin[0] + diff_world[0], self.panningStartOrigin[1] + diff_world[1]))
         elif event.type == pygame.MOUSEBUTTONUP:
-            # TODO
-            print("todo")
-            pass
+            print("pan end")
+            self.panning = False
+            self.panningStartClickPositionScreen = None
+            self.panningStartOrigin = None
 
     # dragging - either drawing a rectangle or moving it around
     def dragHandling(self, event):
@@ -174,6 +181,9 @@ class ZoomHelper:
     def setOrigin(self, origin):
         print("setOrigin: " + str(origin))
         self.origin = origin
+
+    def getOrigin(self):
+        return self.origin
 
     def valueTransform(self, value, worldToScreen):
         transformBy = self.zoom if worldToScreen else 1.0 / self.zoom
