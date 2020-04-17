@@ -205,6 +205,9 @@ class ZoomHelper:
         print("setOrigin: " + str(origin))
         self.origin = origin
 
+    def panByWorld(self, vectorWorld):
+        self.setOrigin((self.origin[0] + vectorWorld[0], self.origin[1] + vectorWorld[1]))
+
     def getOrigin(self):
         return self.origin
 
@@ -291,15 +294,23 @@ class MyGameLoop(GameLoop):
 
     def setZoom(self, zoom, clickPositionScreen):
         self.zoom = zoom
+
         print("Zoom is now: " + str(self.zoom))
+        clickPositionWorld_beforeZoom = zoomHelper.pointScreenToWorld(clickPositionScreen)
+
         self.backgroundImage.setZoom(zoom)
         self.selectionTool.setZoom(zoom)
         zoomHelper.setZoom(self.zoom)
 
-        clickPositionWorld = zoomHelper.pointScreenToWorld(clickPositionScreen)
-        print("zoom at clickPositionScreen: " + str(clickPositionScreen) + ", clickPositionWorld: " + str(clickPositionWorld))
-        # TODO: Fix this
-        # zoomHelper.setPan((100,100))
+        # After the zoom, we want the clickPositionScreen to resolve to the same clickPositionWorld
+        # This means we zoom in on the point that the cursor is over when we use the scroll wheel
+        clickPositionWorld_afterZoom = zoomHelper.pointScreenToWorld(clickPositionScreen)
+        print("zoom at clickPositionScreen: " + str(clickPositionScreen))
+        print("  clickPositionWorld_beforeZoom: " + str(clickPositionWorld_beforeZoom))
+        print("  clickPositionWorld_afterZoom: " + str(clickPositionWorld_afterZoom))
+        panByWorld = (clickPositionWorld_beforeZoom[0] - clickPositionWorld_afterZoom[0], clickPositionWorld_beforeZoom[1] - clickPositionWorld_afterZoom[1])
+        print("  panByWorld: " + str(panByWorld))
+        zoomHelper.panByWorld(panByWorld)
 
     def onClick(self, event):
         # scroll wheel click?
