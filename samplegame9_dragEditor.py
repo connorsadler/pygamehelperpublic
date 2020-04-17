@@ -70,6 +70,9 @@ class SelectionTool(Sprite):
 
         self.zoom = 1
 
+        # panning
+        self.panning = False
+
     def move(self):
         pass
 
@@ -88,10 +91,36 @@ class SelectionTool(Sprite):
             drawText(str(rect.topleft) + " size " + str(rect.width) + "," + str(rect.height), rectZoomed[0]+3, rectZoomed[1]+3, pygamehelper.mediumFont, white)
 
     def onClick(self, event):
+        # if event.type == pygame.MOUSEBUTTONDOWN:
+        #     print("button: " + str(event.button))
+
+        mouseButtonUpOrDown = (event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP)
+
+        # right click to pan
+        if (self.panning and event.type == pygame.MOUSEMOTION) or (mouseButtonUpOrDown and event.button == 3):
+            self.pan(event)
 
         # dragging - either drawing a rectangle or moving it around
-        if event.type == pygame.MOUSEMOTION or ((event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP) and event.button == 1):
+        if event.type == pygame.MOUSEMOTION or (mouseButtonUpOrDown and event.button == 1):
             self.dragHandling(event)
+
+
+    def pan(self, event):
+        clickPositionScreen = pygame.mouse.get_pos()
+        clickPositionWorld = zoomHelper.pointScreenToWorld(clickPositionScreen)
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            # TODO
+            print("todo")
+            zoomHelper.setOrigin(clickPositionWorld)
+        elif event.type == pygame.MOUSEMOTION:
+            # TODO
+            print("todo")
+            pass
+        elif event.type == pygame.MOUSEBUTTONUP:
+            # TODO
+            print("todo")
+            pass
 
     # dragging - either drawing a rectangle or moving it around
     def dragHandling(self, event):
@@ -136,33 +165,53 @@ class ZoomHelper:
         # "zoom" is the transform from world to screen
         # so if zoom == 1.5 then things are 1.5 times bigger onscreen than in the world
         self.zoom = 1
+        # origin is in World coords, to allow panning. This is the world coord which will appear at the top left of the screen
+        self.origin = (0, 0)
 
     def setZoom(self, zoom):
         self.zoom = zoom
 
-    def valueTransform(self, value, transformBy):
+    def setOrigin(self, origin):
+        print("setOrigin: " + str(origin))
+        self.origin = origin
+
+    def valueTransform(self, value, worldToScreen):
+        transformBy = self.zoom if worldToScreen else 1.0 / self.zoom
         return value * transformBy
     def valueWorldToScreen(self, value):
-        return self.valueTransform(value, self.zoom)
+        return self.valueTransform(value, True)
     def valueScreenToWorld(self, value):
-        return self.valueTransform(value, 1.0 / self.zoom)
+        return self.valueTransform(value, False)
 
-    def pointTransform(self, p, transformBy):
-        return (p[0] * transformBy, p[1] * transformBy)
+    def pointTransform(self, p, worldToScreen):
+        if worldToScreen:
+            # world -> screen
+            transformBy = self.zoom
+            offsetx = self.origin[0]
+            offsety = self.origin[1]
+            return ((p[0] - offsetx) * transformBy, (p[1] - offsety) * transformBy)
+        else:
+            # screen -> world
+            transformBy = 1.0 / self.zoom
+            # TODO: Check this calc
+            offsetx = self.origin[0]
+            offsety = self.origin[1]
+            return (p[0] * transformBy + offsetx, p[1] * transformBy + offsety)
+
     def pointWorldToScreen(self, p):
-        return self.pointTransform(p, self.zoom)
+        return self.pointTransform(p, True)
     def pointScreenToWorld(self, p):
-        return self.pointTransform(p, 1.0 / self.zoom)
+        return self.pointTransform(p, False)
 
-    def rectTransform(self, rect, transformBy):
-        resultTopLeft = self.pointTransform((rect[0], rect[1]), transformBy)
-        resultWidth = self.valueTransform(rect[2], transformBy)
-        resultHeight = self.valueTransform(rect[3], transformBy)
+    def rectTransform(self, rect, worldToScreen):
+        resultTopLeft = self.pointTransform((rect[0], rect[1]), worldToScreen)
+        resultWidth = self.valueTransform(rect[2], worldToScreen)
+        resultHeight = self.valueTransform(rect[3], worldToScreen)
         return pygame.Rect(resultTopLeft[0], resultTopLeft[1], resultWidth, resultHeight)
     def rectWorldToScreen(self, rect):
-        return self.rectTransform(rect, self.zoom)
+        return self.rectTransform(rect, True)
     def rectScreenToWorld(self, rect):
-        return self.rectTransform(rect, 1.0 / self.zoom)
+        return self.rectTransform(rect, False)
 
 
 zoomHelper = ZoomHelper()
@@ -199,20 +248,25 @@ class MyGameLoop(GameLoop):
             self.selectionTool.onClick(event)
             self.onClick(event)
 
-    def setZoom(self, zoom):
+    def setZoom(self, zoom, clickPositionScreen):
         self.zoom = zoom
         print("Zoom is now: " + str(self.zoom))
         self.backgroundImage.setZoom(zoom)
         self.selectionTool.setZoom(zoom)
-
         zoomHelper.setZoom(self.zoom)
+
+        clickPositionWorld = zoomHelper.pointScreenToWorld(clickPositionScreen)
+        print("zoom at clickPositionScreen: " + str(clickPositionScreen) + ", clickPositionWorld: " + str(clickPositionWorld))
+        # TODO: Fix this
+        # zoomHelper.setPan((100,100))
 
     def onClick(self, event):
         # scroll wheel click?
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 4 or event.button == 5:
+                clickPositionScreen = pygame.mouse.get_pos()
                 zoomBy = 0.3 if event.button == 4 else -0.3
-                self.setZoom(self.zoom + zoomBy)
+                self.setZoom(self.zoom + zoomBy, clickPositionScreen)
 
 
 pygamehelper.debug = False
@@ -220,3 +274,14 @@ pygamehelper.debug = False
 
 # Run game loop
 MyGameLoop().runGameLoop()
+
+
+# Test for pointScreenToWorld then reverse pointWorldToScreen
+# zoomHelper.setOrigin((500,500))
+# zoomHelper.setZoom(2)
+# clickPointScreen = (100,100)
+# print("clickPointScreen: " + str(clickPointScreen))
+# clickPointWorld = zoomHelper.pointScreenToWorld(clickPointScreen)
+# print("clickPointWorld: " + str(clickPointWorld))
+# clickPointScreen2 = zoomHelper.pointWorldToScreen(clickPointWorld)
+# print("clickPointScreen2: " + str(clickPointScreen2))
