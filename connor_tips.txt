@@ -30,6 +30,8 @@ Other good ones:
 
     Ctrl + K -> Ctrl + S    - Open Keyboard Shortcuts
 
+    Ctrl + Shift + P
+        "Open Settings json"     - Open user settings json
 
 GitLens
 -------
