@@ -33,7 +33,8 @@ class BackgroundImage(Sprite):
     def draw(self):
         if self.zoomedImage == None:
             self.zoomedImage = pygame.transform.rotozoom(self.image, 0, self.zoom)
-        drawImage(self.zoomedImage, 0, 0)
+        worldOrigin_screen = zoomHelper.pointWorldToScreen((0,0))
+        drawImage(self.zoomedImage, worldOrigin_screen[0], worldOrigin_screen[1])
         self.drawGrid()
 
     # Draw grid
@@ -266,6 +267,14 @@ class MyGameLoop(GameLoop):
         pygamehelper.addSprite(self.selectionTool)
 
         self.zoom = 1
+
+        # Intro message
+        # TODO: Allow multi line strings
+        pygamehelper.addSprite(SpriteWithText(30, 30, 200, 30, "Welcome to my editor example", pygamehelper.largeFont, pygamehelper.white).withTimeout(200))
+        pygamehelper.addSprite(SpriteWithText(30, 60, 200, 30, "- Left click and drag to draw a rectangle", pygamehelper.largeFont, pygamehelper.white).withTimeout(220))
+        pygamehelper.addSprite(SpriteWithText(30, 90, 200, 30, "- Left click inside the rectangle and drag it to move it", pygamehelper.largeFont, pygamehelper.white).withTimeout(240))
+        pygamehelper.addSprite(SpriteWithText(30, 120, 200, 30, "- Right click and drag to pan around", pygamehelper.largeFont, pygamehelper.white).withTimeout(260))
+        pygamehelper.addSprite(SpriteWithText(30, 150, 200, 30, "- Mouse wheel to zoom in and out", pygamehelper.largeFont, pygamehelper.white).withTimeout(280))
 
     #
     # TODO

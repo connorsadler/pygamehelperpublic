@@ -78,6 +78,7 @@ class Ball(Sprite):
             pass
 
 # Says "Get Ready" for a while, then dies and spawns a new Ball
+# TODO: Make this generic
 class GetReadyMessage(Sprite):
     def __init__(self):
         super().__init__(getScreenRect().width/2, getScreenRect().height/2, 10, 10)

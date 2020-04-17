@@ -68,6 +68,10 @@ class Sprite():
         # Clip area to use when actually drawing the image
         self.clipArea = None
 
+        # Optional object to handle movement of this sprite
+        # If one of these is installed, the default "move" method must be called by the Sprite subclass
+        self.moveHandler = None
+
     def setAngle(self, newAngle):
         self.angle = newAngle
 
@@ -87,7 +91,9 @@ class Sprite():
         self.y += dy
 
     def move(self):
-        pass
+        # Call moveHandler delegate if installed
+        if self.moveHandler:
+            self.moveHandler.move(self)
 
     def moveDone(self):
         if self.imageDrawingHelper:
@@ -175,6 +181,10 @@ class Sprite():
         else:
             print("nextCostume called with no imageDrawingHelper")
 
+    def withTimeout(self, timeoutTicks):
+        self.moveHandler = MoveHandlerTimeout(self, timeoutTicks)
+        return self
+
 #
 # This is reduced in size now and could maybe be deleted
 #
@@ -182,6 +192,16 @@ class SpriteWithImage(Sprite):
     def __init__(self, x, y, imageFilenameOrFilenamesOrImageHandler):
         super().__init__(x, y)
         self.imageDrawingHelper = SpriteImageDrawingHelper(self, imageFilenameOrFilenamesOrImageHandler)
+
+class SpriteWithText(Sprite):
+    def __init__(self, x, y, width, height, text, font, colour):
+        super().__init__(x, y, width, height)
+        self.text = text
+        self.font = font
+        self.colour = colour
+
+    def draw(self):
+        drawText(self.text, self.x, self.y, self.font, self.colour)
 
 # 
 # Helper class which implements a Sprite with image (or images aka costumes)
@@ -372,6 +392,47 @@ class Counter:
         if self.count >= self.countUpTo:
             self.onCountMethod()
             self.count = 0
+
+#
+# Delegate to take over movement for a sprite
+#
+class MoveHandler:
+    def __init__(self):
+        pass
+
+    def move(self, sprite):
+        pass
+
+#
+# Move handler which simply kills the sprite after a certain number of game ticks
+#
+class MoveHandlerTimeout(MoveHandler):
+    def __init__(self, sprite, timeoutTicks):
+        self.sprite = sprite
+        self.timeoutTicks = timeoutTicks
+
+    def move(self, sprite):
+        self.timeoutTicks -= 1
+        if self.timeoutTicks <= 0:
+            self.sprite.dead = True
+
+# Says "Get Ready" for a while, then dies and spawns a new Ball
+# TODO: Make this generic
+class GetReadyMessage(Sprite):
+    def __init__(self):
+        super().__init__(getScreenRect().width/2, getScreenRect().height/2, 10, 10)
+        self.health = 100
+        self.colour = red
+
+    def move(self):
+        self.y += 0.5
+        self.health -= 1
+        if self.health == 0:
+            self.dead = True
+            pygamehelper.game.spawnBall()
+
+    def draw(self):
+        drawText("Get Ready", self.x - 60, self.y, pygamehelper.hugeFont, self.colour)
 
 
 # Will kill the sprite if it goes off screen
