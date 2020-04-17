@@ -665,8 +665,8 @@ def drawRect(rect, colour, width=0):
 def drawPoint(point, colour):
     drawRect(Rect(point[0],point[1],3,3), colour)
 
-def drawLine(fromPoint, toPoint, colour):
-    pygame.draw.line(gameDisplay, colour, fromPoint, toPoint)
+def drawLine(fromPoint, toPoint, colour, width = 1):
+    pygame.draw.line(gameDisplay, colour, fromPoint, toPoint, width)
 
 #
 # Draws and moves all sprites

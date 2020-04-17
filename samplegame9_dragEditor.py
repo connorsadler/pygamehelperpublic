@@ -36,21 +36,43 @@ class BackgroundImage(Sprite):
         drawImage(self.zoomedImage, 0, 0)
         self.drawGrid()
 
+    # Draw grid
+    # The grid is based on World coords
+    # Must take into account zoom level and pan amount
     def drawGrid(self):
-        gridSizeWorld = 100
+        gridSizeWorld = 250
         gridSizeScreen = zoomHelper.valueWorldToScreen(gridSizeWorld)
-        # print("gridSizeWorld: " + str(gridSizeWorld))
-        # print("gridSizeScreen: " + str(gridSizeScreen))
-        for x in range(0, screenRect.width, int(gridSizeScreen)):
-            # print("  x: " + str(x))
-            drawLine((x, 0), (x, screenRect.height), green)
-        for y in range(0, screenRect.height, int(gridSizeScreen)):
-            # print("  y: " + str(y))
-            drawLine((0, y), (screenRect.width, y), green)
+        #origin = zoomHelper.getOrigin()
+        screenTopLeft_world = zoomHelper.pointScreenToWorld((0,0))
+        worldOrigin_screen = zoomHelper.pointWorldToScreen((0,0))
+        firstGridPosOffset_world = (screenTopLeft_world[0] % gridSizeWorld, screenTopLeft_world[1] % gridSizeWorld)
+        firstGridPosOffset_screen = (zoomHelper.valueWorldToScreen(firstGridPosOffset_world[0]), zoomHelper.valueWorldToScreen(firstGridPosOffset_world[1]))
+
+        # These loops work in SCREEN coords - might be better for them to work in WORLD coords
+        # e.g. Easier to tell when we're on axis, or to show a different grid colour every 500 world coords
+        #      We wouldn't need the checkEqual hack either
+        for x in range(0, screenRect.width + int(gridSizeScreen), int(gridSizeScreen)):
+            xAlt = x - firstGridPosOffset_screen[0]
+            axis = checkEqual(xAlt, worldOrigin_screen[0])
+            width = 3 if axis else 2
+            drawLine((xAlt, 0), (xAlt, screenRect.height), red if axis else green, width)
+        for y in range(0, screenRect.height + int(gridSizeScreen), int(gridSizeScreen)):
+            yAlt = y - firstGridPosOffset_screen[1]
+            axis = checkEqual(yAlt, worldOrigin_screen[1])
+            width = 3 if axis else 2
+            drawLine((0, yAlt), (screenRect.width, yAlt), red if axis else green, width)
 
     def setZoom(self, zoom):
         self.zoom = zoom
         self.zoomedImage = None
+
+# Hack to allow float numbers which are very nearly equal to be treated as equal
+def checkEqual(value1, value2):
+    if value1 == value2:
+        return True
+    if abs(value1-value2) < 0.001:
+        return True
+    return value1 == value2
 
 #
 # SelectionTool
