@@ -24,7 +24,7 @@ class BackgroundImage(Sprite):
         spriteImageName = "images/bash2.png"
         spriteImageNameResolved = resolveImageFile(spriteImageName)
         self.image = pygame.image.load(spriteImageNameResolved)
-        self.zoom = 1
+        # The image to draw is cached in zoomedImage - it could be zoomed in or out
         self.zoomedImage = None
 
     def move(self):
@@ -32,7 +32,7 @@ class BackgroundImage(Sprite):
 
     def draw(self):
         if self.zoomedImage == None:
-            self.zoomedImage = pygame.transform.rotozoom(self.image, 0, self.zoom)
+            self.zoomedImage = pygame.transform.rotozoom(self.image, 0, zoomHelper.getZoom())
         worldOrigin_screen = zoomHelper.pointWorldToScreen((0,0))
         drawImage(self.zoomedImage, worldOrigin_screen[0], worldOrigin_screen[1])
         self.drawGrid()
@@ -40,6 +40,7 @@ class BackgroundImage(Sprite):
     # Draw grid
     # The grid is based on World coords
     # Must take into account zoom level and pan amount
+    # TODO: Move this elsewhere... maybe into ZoomHelper even?
     def drawGrid(self):
         gridSizeWorld = 250
         gridSizeScreen = zoomHelper.valueWorldToScreen(gridSizeWorld)
@@ -52,6 +53,8 @@ class BackgroundImage(Sprite):
         # These loops work in SCREEN coords - might be better for them to work in WORLD coords
         # e.g. Easier to tell when we're on axis, or to show a different grid colour every 500 world coords
         #      We wouldn't need the checkEqual hack either
+        # TODO: This would fix the rounding (?) problem which means sometimes the axes are not drawn in red at certain zoom levels
+        #       e.g. start the program - pan a little so you can see both axes - zoom out two steps - axes go green rather than red
         for x in range(0, screenRect.width + int(gridSizeScreen), int(gridSizeScreen)):
             xAlt = x - firstGridPosOffset_screen[0]
             axis = checkEqual(xAlt, worldOrigin_screen[0])
@@ -63,8 +66,8 @@ class BackgroundImage(Sprite):
             width = 3 if axis else 2
             drawLine((0, yAlt), (screenRect.width, yAlt), red if axis else green, width)
 
-    def setZoom(self, zoom):
-        self.zoom = zoom
+    def onZoomChanged(self):
+        # Zoom has changed - recreate the zoomed image on next 'draw'
         self.zoomedImage = None
 
 # Hack to allow float numbers which are very nearly equal to be treated as equal
@@ -73,6 +76,7 @@ def checkEqual(value1, value2):
         return True
     if abs(value1-value2) < 0.001:
         return True
+    #print("not same: " + str(abs(value1-value2)))
     return value1 == value2
 
 #
@@ -90,8 +94,6 @@ class SelectionTool(Sprite):
         self.dragMovingRect = False
         self.dragMovingRectOffset = None
         self.dragMovingRectSize = None
-
-        self.zoom = 1
 
         # panning
         self.panning = False
@@ -123,14 +125,14 @@ class SelectionTool(Sprite):
 
         # right click to pan
         if (self.panning and event.type == pygame.MOUSEMOTION) or (mouseButtonUpOrDown and event.button == 3):
-            self.pan(event)
+            self.panHandling(event)
 
         # dragging - either drawing a rectangle or moving it around
-        if event.type == pygame.MOUSEMOTION or (mouseButtonUpOrDown and event.button == 1):
+        if ((self.dragDrawingRect or self.dragMovingRect) and event.type == pygame.MOUSEMOTION) or (mouseButtonUpOrDown and event.button == 1):
             self.dragHandling(event)
 
 
-    def pan(self, event):
+    def panHandling(self, event):
         clickPositionScreen = pygame.mouse.get_pos()
         clickPositionWorld = zoomHelper.pointScreenToWorld(clickPositionScreen)
 
@@ -180,9 +182,6 @@ class SelectionTool(Sprite):
             self.dragDrawingRect = False
             self.dragMovingRect = False
 
-    def setZoom(self, zoom):
-        self.zoom = zoom
-
 #
 # ZoomHelper
 # Helps with zooming - does the mapping from world to screen coordinates and vice versa
@@ -196,10 +195,23 @@ class ZoomHelper:
         # so if zoom == 1.5 then things are 1.5 times bigger onscreen than in the world
         self.zoom = 1
         # origin is in World coords, to allow panning. This is the world coord which will appear at the top left of the screen
-        self.origin = (0, 0)
+        self.origin = (-50, -50)
+
+        # Allow registration of listeners which will be informed when zoom changes
+        # Each listener must implement: onZoomChanged()
+        self.zoomChangedListeners = []
 
     def setZoom(self, zoom):
         self.zoom = zoom
+        # Inform any listeners
+        for zoomChangedListener in self.zoomChangedListeners:
+            zoomChangedListener.onZoomChanged()
+
+    def getZoom(self):
+        return self.zoom
+
+    def addZoomChangedListener(self, listener):
+        self.zoomChangedListeners.append(listener)
 
     def setOrigin(self, origin):
         print("setOrigin: " + str(origin))
@@ -229,7 +241,6 @@ class ZoomHelper:
         else:
             # screen -> world
             transformBy = 1.0 / self.zoom
-            # TODO: Check this calc
             offsetx = self.origin[0]
             offsety = self.origin[1]
             return (p[0] * transformBy + offsetx, p[1] * transformBy + offsety)
@@ -249,6 +260,25 @@ class ZoomHelper:
     def rectScreenToWorld(self, rect):
         return self.rectTransform(rect, False)
 
+    # Zoom in or out
+    # Will probably pan aswell in order to keep the clicked World position at a constant Screen position
+    def changeZoom(self, zoomBy, clickPositionScreen):
+        clickPositionWorld_beforeZoom = self.pointScreenToWorld(clickPositionScreen)
+
+        # Single 'zoom' variable is held in zoomHelper
+        self.setZoom(self.zoom + zoomBy)
+        print("Zoom is now: " + str(self.zoom))
+
+        # After the zoom, we want the clickPositionScreen to resolve to the same clickPositionWorld as before the zoom
+        # This means we zoom in on the point that the cursor is over when we use the scroll wheel
+        clickPositionWorld_afterZoom = self.pointScreenToWorld(clickPositionScreen)
+        print("zoom at clickPositionScreen: " + str(clickPositionScreen))
+        print("  clickPositionWorld_beforeZoom: " + str(clickPositionWorld_beforeZoom))
+        print("  clickPositionWorld_afterZoom: " + str(clickPositionWorld_afterZoom))
+        panByWorld = (clickPositionWorld_beforeZoom[0] - clickPositionWorld_afterZoom[0], clickPositionWorld_beforeZoom[1] - clickPositionWorld_afterZoom[1])
+        print("  panByWorld: " + str(panByWorld))
+        self.panByWorld(panByWorld)
+
 
 zoomHelper = ZoomHelper()
 
@@ -263,13 +293,14 @@ class MyGameLoop(GameLoop):
         # TODO
         # Create any initial instances of your sprites here
         #
-        # Create
+        # Create sprites
         self.backgroundImage = BackgroundImage()
         pygamehelper.addSprite(self.backgroundImage)
+        # Needs to know when zoom level is changed
+        zoomHelper.addZoomChangedListener(self.backgroundImage)
+
         self.selectionTool = SelectionTool(50, 50)
         pygamehelper.addSprite(self.selectionTool)
-
-        self.zoom = 1
 
         # Intro message
         # TODO: Allow multi line strings
@@ -292,33 +323,13 @@ class MyGameLoop(GameLoop):
             self.selectionTool.onClick(event)
             self.onClick(event)
 
-    def setZoom(self, zoom, clickPositionScreen):
-        self.zoom = zoom
-
-        print("Zoom is now: " + str(self.zoom))
-        clickPositionWorld_beforeZoom = zoomHelper.pointScreenToWorld(clickPositionScreen)
-
-        self.backgroundImage.setZoom(zoom)
-        self.selectionTool.setZoom(zoom)
-        zoomHelper.setZoom(self.zoom)
-
-        # After the zoom, we want the clickPositionScreen to resolve to the same clickPositionWorld
-        # This means we zoom in on the point that the cursor is over when we use the scroll wheel
-        clickPositionWorld_afterZoom = zoomHelper.pointScreenToWorld(clickPositionScreen)
-        print("zoom at clickPositionScreen: " + str(clickPositionScreen))
-        print("  clickPositionWorld_beforeZoom: " + str(clickPositionWorld_beforeZoom))
-        print("  clickPositionWorld_afterZoom: " + str(clickPositionWorld_afterZoom))
-        panByWorld = (clickPositionWorld_beforeZoom[0] - clickPositionWorld_afterZoom[0], clickPositionWorld_beforeZoom[1] - clickPositionWorld_afterZoom[1])
-        print("  panByWorld: " + str(panByWorld))
-        zoomHelper.panByWorld(panByWorld)
-
     def onClick(self, event):
         # scroll wheel click?
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 4 or event.button == 5:
                 clickPositionScreen = pygame.mouse.get_pos()
                 zoomBy = 0.3 if event.button == 4 else -0.3
-                self.setZoom(self.zoom + zoomBy, clickPositionScreen)
+                zoomHelper.changeZoom(zoomBy, clickPositionScreen)
 
 
 pygamehelper.debug = False
