@@ -145,7 +145,7 @@ class SelectionTool(Sprite):
             diffBetweenCurrentMousePosAndStartPanPos_screen = (clickPositionScreen[0] - self.panningStartClickPositionScreen[0], clickPositionScreen[1] - self.panningStartClickPositionScreen[1])
             print("diffBetweenCurrentMousePosAndStartPanPos_screen: " + str(diffBetweenCurrentMousePosAndStartPanPos_screen))
             diff_world = (zoomHelper.valueScreenToWorld(diffBetweenCurrentMousePosAndStartPanPos_screen[0]), zoomHelper.valueScreenToWorld(diffBetweenCurrentMousePosAndStartPanPos_screen[1]))
-            zoomHelper.setOrigin((self.panningStartOrigin[0] + diff_world[0], self.panningStartOrigin[1] + diff_world[1]))
+            zoomHelper.setOrigin((self.panningStartOrigin[0] - diff_world[0], self.panningStartOrigin[1] - diff_world[1]))
         elif event.type == pygame.MOUSEBUTTONUP:
             print("pan end")
             self.panning = False
