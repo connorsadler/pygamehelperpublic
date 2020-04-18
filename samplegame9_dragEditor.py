@@ -196,6 +196,7 @@ class ZoomHelper:
         # "zoom" is the transform from world to screen
         # so if zoom == 1.5 then things are 1.5 times bigger onscreen than in the world
         self.zoom = 1
+        self.zoomStep = 1
         # origin is in World coords, to allow panning. This is the world coord which will appear at the top left of the screen
         self.origin = (-50, -50)
 
@@ -203,12 +204,13 @@ class ZoomHelper:
         # Each listener must implement: onZoomChanged()
         self.zoomChangedListeners = []
 
-    def setZoom(self, zoom):
+    def setZoom(self, zoom, zoomStep):
         self.zoom = zoom
+        self.zoomStep = zoomStep
         # Inform any listeners
         for zoomChangedListener in self.zoomChangedListeners:
             zoomChangedListener.onZoomChanged()
-
+    
     def getZoom(self):
         return self.zoom
 
@@ -264,12 +266,18 @@ class ZoomHelper:
 
     # Zoom in or out
     # Will probably pan aswell in order to keep the clicked World position at a constant Screen position
-    def changeZoom(self, zoomBy, clickPositionScreen):
+    def changeZoom(self, zoomIn, clickPositionScreen):
         clickPositionWorld_beforeZoom = self.pointScreenToWorld(clickPositionScreen)
 
+        #zoomAmount = self.calcZoomAmount()
+        zoomAmount = 0.3
+        newZoom = self.zoom + (zoomAmount * (1 if zoomIn else -1))
+        newZoomStep = self.zoomStep + (1 if zoomIn else -1)
+        #newZoom = self.calcNewZoom(newZoomStep)
+
         # Single 'zoom' variable is held in zoomHelper
-        self.setZoom(self.zoom + zoomBy)
-        print("Zoom is now: " + str(self.zoom))
+        self.setZoom(newZoom, newZoomStep)
+        print("Zoom is now: " + str(self.zoom) + " / step: " + str(self.zoomStep))
 
         # After the zoom, we want the clickPositionScreen to resolve to the same clickPositionWorld as before the zoom
         # This means we zoom in on the point that the cursor is over when we use the scroll wheel
@@ -280,6 +288,29 @@ class ZoomHelper:
         panByWorld = (clickPositionWorld_beforeZoom[0] - clickPositionWorld_afterZoom[0], clickPositionWorld_beforeZoom[1] - clickPositionWorld_afterZoom[1])
         print("  panByWorld: " + str(panByWorld))
         self.panByWorld(panByWorld)
+
+    # TODO: Figure this out
+    # def calcNewZoom(self, newZoomStep):
+        # if newZoomStep == 1:
+        #     return 1
+        # if newZoomStep <= 0:
+        #     stepsBelow1 = 1 - newZoomStep
+        #     return 0.7 + pow(0.8, stepsBelow1)
+        # return newZoomStep * 3 * 0.3
+
+    # TODO: Figure this out
+    # we currently always use 0.3
+    # now we observe:
+    # - we need a lower amount if zoom < 1 - we don't want zoom to reach 0
+    # - we need a higher amount if zoom > ???
+    #def calcZoomAmount(self):
+        # return 0.3
+        # if self.zoomStep < 1:
+        #     return 0.1
+        # elif self.zoomStep > 4:
+        #     return 3.0
+        # else:
+        #     return 0.3
 
 
 zoomHelper = ZoomHelper()
@@ -330,8 +361,8 @@ class MyGameLoop(GameLoop):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 4 or event.button == 5:
                 clickPositionScreen = pygame.mouse.get_pos()
-                zoomBy = 0.3 if event.button == 4 else -0.3
-                zoomHelper.changeZoom(zoomBy, clickPositionScreen)
+                zoomIn = (event.button == 4)
+                zoomHelper.changeZoom(zoomIn, clickPositionScreen)
 
 
 pygamehelper.debug = False
