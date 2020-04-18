@@ -61,7 +61,8 @@ class BackgroundImage(Sprite):
         self.drawGrid_oneDirection(False, gridSizeWorld, gridSizeScreen, getScreenRect().height, screenTopLeft_world_snappedToGrid[1], screenTopLeft_screen_snappedToGrid[1])
         
     def drawGrid_oneDirection(self, across, gridSizeWorld, gridSizeScreen, screenSizeScreen, screenTopLeft_world_snappedToGrid, screenTopLeft_screen_snappedToGrid):
-        numGridCellsToDraw_across = int(screenSizeScreen / gridSizeScreen) + 1
+        # not entirely sure why i need "+ 2" here - it fixes missing grid lines at certain zoom levels, when you pan right of the world origin
+        numGridCellsToDraw_across = int(screenSizeScreen / gridSizeScreen) + 2
         # if we're going 'across' then 'currentpos' is an x coord
         # if we're going 'down' then 'currentpos' is a y coord
         currentpos_world = screenTopLeft_world_snappedToGrid
