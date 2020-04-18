@@ -44,40 +44,42 @@ class BackgroundImage(Sprite):
     def drawGrid(self):
         gridSizeWorld = 250
         gridSizeScreen = zoomHelper.valueWorldToScreen(gridSizeWorld)
-        #origin = zoomHelper.getOrigin()
-        screenTopLeft_world = zoomHelper.pointScreenToWorld((0,0))
-        worldOrigin_screen = zoomHelper.pointWorldToScreen((0,0))
-        firstGridPosOffset_world = (screenTopLeft_world[0] % gridSizeWorld, screenTopLeft_world[1] % gridSizeWorld)
-        firstGridPosOffset_screen = (zoomHelper.valueWorldToScreen(firstGridPosOffset_world[0]), zoomHelper.valueWorldToScreen(firstGridPosOffset_world[1]))
 
-        # These loops work in SCREEN coords - might be better for them to work in WORLD coords
-        # e.g. Easier to tell when we're on axis, or to show a different grid colour every 500 world coords
-        #      We wouldn't need the checkEqual hack either
-        # TODO: This would fix the rounding (?) problem which means sometimes the axes are not drawn in red at certain zoom levels
-        #       e.g. start the program - pan a little so you can see both axes - zoom out two steps - axes go green rather than red
-        for x in range(0, screenRect.width + int(gridSizeScreen), int(gridSizeScreen)):
-            xAlt = x - firstGridPosOffset_screen[0]
-            axis = checkEqual(xAlt, worldOrigin_screen[0])
-            width = 3 if axis else 2
-            drawLine((xAlt, 0), (xAlt, screenRect.height), red if axis else green, width)
-        for y in range(0, screenRect.height + int(gridSizeScreen), int(gridSizeScreen)):
-            yAlt = y - firstGridPosOffset_screen[1]
-            axis = checkEqual(yAlt, worldOrigin_screen[1])
-            width = 3 if axis else 2
-            drawLine((0, yAlt), (screenRect.width, yAlt), red if axis else green, width)
+        screenTopLeft_world = zoomHelper.pointScreenToWorld((0,0))
+        # Calc world coord of first grid point we wish to draw onscreen
+        screenTopLeft_world_snappedToGrid = (int(screenTopLeft_world[0] / gridSizeWorld) * gridSizeWorld, int(screenTopLeft_world[1] / gridSizeWorld) * gridSizeWorld)
+        # Calc equivalent screen coord
+        screenTopLeft_screen_snappedToGrid = zoomHelper.pointWorldToScreen(screenTopLeft_world_snappedToGrid)
+        # print("screenTopLeft_world: " + str(screenTopLeft_world))
+        # print("screenTopLeft_world_snappedToGrid: " + str(screenTopLeft_world_snappedToGrid))
+        # print("screenTopLeft_screen_snappedToGrid: " + str(screenTopLeft_screen_snappedToGrid))
+
+        # Draw
+        # Step across the x axis, drawing vertical lines
+        self.drawGrid_oneDirection(True, gridSizeWorld, gridSizeScreen, getScreenRect().width, screenTopLeft_world_snappedToGrid[0], screenTopLeft_screen_snappedToGrid[0])
+        # Step up the y axis, drawing horizontal lines
+        self.drawGrid_oneDirection(False, gridSizeWorld, gridSizeScreen, getScreenRect().height, screenTopLeft_world_snappedToGrid[1], screenTopLeft_screen_snappedToGrid[1])
+        
+    def drawGrid_oneDirection(self, across, gridSizeWorld, gridSizeScreen, screenSizeScreen, screenTopLeft_world_snappedToGrid, screenTopLeft_screen_snappedToGrid):
+        numGridCellsToDraw_across = int(screenSizeScreen / gridSizeScreen) + 1
+        # if we're going 'across' then 'currentpos' is an x coord
+        # if we're going 'down' then 'currentpos' is a y coord
+        currentpos_world = screenTopLeft_world_snappedToGrid
+        currentpos_screen = screenTopLeft_screen_snappedToGrid
+        for x in range(0, numGridCellsToDraw_across):
+            axis = (currentpos_world == 0)
+            width = (3 if axis else 2)
+            if across:
+                drawLine((currentpos_screen, 0), (currentpos_screen, screenRect.height), red if axis else green, width)
+            else:
+                drawLine((0, currentpos_screen), (screenRect.width, currentpos_screen), red if axis else green, width)
+            # Move world and screen along - keeping track of both avoids any rounding issues when checking if we're on the axis
+            currentpos_world += gridSizeWorld
+            currentpos_screen += gridSizeScreen
 
     def onZoomChanged(self):
         # Zoom has changed - recreate the zoomed image on next 'draw'
         self.zoomedImage = None
-
-# Hack to allow float numbers which are very nearly equal to be treated as equal
-def checkEqual(value1, value2):
-    if value1 == value2:
-        return True
-    if abs(value1-value2) < 0.001:
-        return True
-    #print("not same: " + str(abs(value1-value2)))
-    return value1 == value2
 
 #
 # SelectionTool
@@ -214,7 +216,7 @@ class ZoomHelper:
         self.zoomChangedListeners.append(listener)
 
     def setOrigin(self, origin):
-        print("setOrigin: " + str(origin))
+        #print("setOrigin: " + str(origin))
         self.origin = origin
 
     def panByWorld(self, vectorWorld):
