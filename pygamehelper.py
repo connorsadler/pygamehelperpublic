@@ -29,6 +29,7 @@ yellow1 = (236, 245, 66)
 purple = (255, 0, 255)
 yellow = (255, 255, 0)
 teal = (0, 255, 255)
+lightgray = (128, 128, 128)
 colours = [red, blue, green, purple, yellow, teal]
 transparentColour = (0,0,0,0)
 transparentColor = transparentColour

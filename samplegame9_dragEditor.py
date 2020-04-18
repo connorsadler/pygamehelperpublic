@@ -27,6 +27,9 @@ class BackgroundImage(Sprite):
         # The image to draw is cached in zoomedImage - it could be zoomed in or out
         self.zoomedImage = None
 
+        # Grid drawer
+        self.gridDrawer = GridDrawer(250)
+
     def move(self):
         pass
 
@@ -35,14 +38,29 @@ class BackgroundImage(Sprite):
             self.zoomedImage = pygame.transform.rotozoom(self.image, 0, zoomHelper.getZoom())
         worldOrigin_screen = zoomHelper.pointWorldToScreen((0,0))
         drawImage(self.zoomedImage, worldOrigin_screen[0], worldOrigin_screen[1])
-        self.drawGrid()
+        self.gridDrawer.drawGrid()
+
+    def onZoomChanged(self):
+        # Zoom has changed - recreate the zoomed image on next 'draw'
+        self.zoomedImage = None
+
+#
+# Draws a grid
+# Grid extends infinitely in all directions, in World coords
+#
+class GridDrawer:
+    def __init__(self, gridSizeWorld, gridOffsetWorld = (0,0), normalLineColour = green, normalLineWidth = 2):
+        self.gridSizeWorld = gridSizeWorld
+        self.gridOffsetWorld = gridOffsetWorld
+        self.normalLineColour = normalLineColour
+        self.normalLineWidth = normalLineWidth
 
     # Draw grid
     # The grid is based on World coords
     # Must take into account zoom level and pan amount
     # TODO: Move this elsewhere... maybe into ZoomHelper even?
     def drawGrid(self):
-        gridSizeWorld = 250
+        gridSizeWorld = self.gridSizeWorld
         gridSizeScreen = zoomHelper.valueWorldToScreen(gridSizeWorld)
 
         screenTopLeft_world = zoomHelper.pointScreenToWorld((0,0))
@@ -56,31 +74,31 @@ class BackgroundImage(Sprite):
 
         # Draw
         # Step across the x axis, drawing vertical lines
-        self.drawGrid_oneDirection(True, gridSizeWorld, gridSizeScreen, getScreenRect().width, screenTopLeft_world_snappedToGrid[0], screenTopLeft_screen_snappedToGrid[0])
+        self.drawGrid_oneDirection(True, gridSizeWorld, gridSizeScreen, getScreenRect().width, screenTopLeft_world_snappedToGrid[0], screenTopLeft_screen_snappedToGrid[0], self.gridOffsetWorld[0])
         # Step up the y axis, drawing horizontal lines
-        self.drawGrid_oneDirection(False, gridSizeWorld, gridSizeScreen, getScreenRect().height, screenTopLeft_world_snappedToGrid[1], screenTopLeft_screen_snappedToGrid[1])
+        self.drawGrid_oneDirection(False, gridSizeWorld, gridSizeScreen, getScreenRect().height, screenTopLeft_world_snappedToGrid[1], screenTopLeft_screen_snappedToGrid[1], self.gridOffsetWorld[1])
         
-    def drawGrid_oneDirection(self, across, gridSizeWorld, gridSizeScreen, screenSizeScreen, screenTopLeft_world_snappedToGrid, screenTopLeft_screen_snappedToGrid):
+    def drawGrid_oneDirection(self, across, gridSizeWorld, gridSizeScreen, screenSizeScreen, screenTopLeft_world_snappedToGrid, screenTopLeft_screen_snappedToGrid, gridOffsetWorldValue):
+
+        gridOffsetScreenValue = zoomHelper.valueWorldToScreen(gridOffsetWorldValue)
+
         # not entirely sure why i need "+ 2" here - it fixes missing grid lines at certain zoom levels, when you pan right of the world origin
         numGridCellsToDraw_across = int(screenSizeScreen / gridSizeScreen) + 2
         # if we're going 'across' then 'currentpos' is an x coord
         # if we're going 'down' then 'currentpos' is a y coord
-        currentpos_world = screenTopLeft_world_snappedToGrid
-        currentpos_screen = screenTopLeft_screen_snappedToGrid
+        currentpos_world = screenTopLeft_world_snappedToGrid + gridOffsetWorldValue
+        currentpos_screen = screenTopLeft_screen_snappedToGrid + gridOffsetScreenValue
         for x in range(0, numGridCellsToDraw_across):
             axis = (currentpos_world == 0)
-            width = (3 if axis else 2)
+            width = (3 if axis else self.normalLineWidth)
             if across:
-                drawLine((currentpos_screen, 0), (currentpos_screen, screenRect.height), red if axis else green, width)
+                drawLine((currentpos_screen, 0), (currentpos_screen, screenRect.height), red if axis else self.normalLineColour, width)
             else:
-                drawLine((0, currentpos_screen), (screenRect.width, currentpos_screen), red if axis else green, width)
+                drawLine((0, currentpos_screen), (screenRect.width, currentpos_screen), red if axis else self.normalLineColour, width)
             # Move world and screen along - keeping track of both avoids any rounding issues when checking if we're on the axis
             currentpos_world += gridSizeWorld
             currentpos_screen += gridSizeScreen
 
-    def onZoomChanged(self):
-        # Zoom has changed - recreate the zoomed image on next 'draw'
-        self.zoomedImage = None
 
 #
 # SelectionTool
@@ -103,6 +121,8 @@ class SelectionTool(Sprite):
         self.panningStartClickPositionScreen = None
         self.panningStartOrigin = None
 
+        self.gridDrawer = None
+
     def move(self):
         pass
 
@@ -119,6 +139,10 @@ class SelectionTool(Sprite):
             # TODO: Make rect line thicker when you zoom in
             drawRect(rectZoomed, white, 2)
             drawText(str(rect.topleft) + " size " + str(rect.width) + "," + str(rect.height), rectZoomed[0]+3, rectZoomed[1]+3, pygamehelper.mediumFont, white)
+
+            if not self.dragDrawingRect:
+                if self.gridDrawer != None:
+                    self.gridDrawer.drawGrid()
 
     def onClick(self, event):
         # if event.type == pygame.MOUSEBUTTONDOWN:
@@ -184,6 +208,12 @@ class SelectionTool(Sprite):
         elif event.type == pygame.MOUSEBUTTONUP:
             self.dragDrawingRect = False
             self.dragMovingRect = False
+            # draw grid based on new rect
+            # TODO: Needs more work
+            gridsize = max(abs(self.dragStartPoint[0] - self.dragEndPoint[0]), 20)
+            offsetx = self.dragStartPoint[0] % gridsize
+            offsety = self.dragStartPoint[1] % gridsize
+            self.gridDrawer = GridDrawer(gridsize, (offsetx,offsety), lightgray, 1)
 
 #
 # ZoomHelper
