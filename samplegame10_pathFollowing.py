@@ -116,7 +116,9 @@ class MyGameLoop(GameLoop):
         path.addWaypoint(400, 300)
         path.addWaypoint(50, 300)
         path.addWaypoint(50, 50)
+        # PathDrawer will draw the path as lines
         pygamehelper.addSprite(PathDrawer(path))
+        # PathFollowSprite will move along the path
         pygamehelper.addSprite(PathFollowSprite(path))
 
     #
