@@ -560,6 +560,19 @@ def calcAngle(dx, dy):
 def addVectors(v1, v2):
     return (v1[0] + v2[0], v1[1] + v2[1])
 
+def subtractVectors(v1, v2):
+    return (v1[0] - v2[0], v1[1] - v2[1])
+
+def scaleVector(v, scaleBy):
+    return (v[0] * scaleBy, v[1] * scaleBy)
+
+def isVectorZero(v, tolerance):
+    if v[0] == 0 and v[1] == 0:
+        return True
+    if abs(v[0]) <= tolerance and abs(v[1]) <= tolerance:
+        return True
+    return False
+
 def flipYCoord(point):
     return (point[0], -point[1])
 
