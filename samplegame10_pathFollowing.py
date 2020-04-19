@@ -18,7 +18,7 @@ pygamehelper.initPygame()
 #
 
 #
-#
+# Path - a list of points
 #
 class Path(Sprite):
     def __init__(self):
@@ -46,7 +46,6 @@ class PathDrawer(Sprite):
         pass
 
     def draw(self):
-        #super().draw()
         previous = None
         for waypoint in self.path.getWaypoints():
             if previous != None:
@@ -62,38 +61,38 @@ class PathFollowSprite(Sprite):
         self.path = path
         # Which point we're heading towards
         self.headingTowardsPointIdx = 0
-        self.velocityVector = None
-        self.nextPoint = None
+        self.calcDestinationAndVelocity()
+
+    # Calc how to get from our current x,y to the next point
+    def calcDestinationAndVelocity(self):
+        # Grab point which we're currently going to head towards
+        self.destinationPoint = self.path.getWaypoints()[self.headingTowardsPointIdx]
+
+        # velocityVector is the amount to move on each step along the path to the destination point
+        # TODO: How to tell how many steps to take on this leg of the path?
+        self.velocityVector = subtractVectors(self.destinationPoint, self.getLocation())
+        self.velocityVector = scaleVector(self.velocityVector, 0.01)
 
     def move(self):
-        if self.velocityVector == None:
-            # Calc how to get from our x,y to the next point
-            self.setNextPoint()
-            self.velocityVector = subtractVectors(self.nextPoint, self.getLocation())
-            # TODO: How to tell how many steps to take on this leg of the path?
-            self.velocityVector = scaleVector(self.velocityVector, 0.01)
-
+        # Take a step along the path
         self.moveBy(self.velocityVector[0], self.velocityVector[1])
 
         # Check if we're reached the point
         # TODO: This is slightly confusing, to subtract the points as vectors - we should have an 'isVectorEquals' routine, with a tolerance allowed
-        check = subtractVectors(self.nextPoint, self.getLocation())
+        check = subtractVectors(self.destinationPoint, self.getLocation())
         if isVectorZero(check, 0.01):
             # We reached a point - now head to the next one
             print("We reached point: " + str(self.headingTowardsPointIdx))
             self.headingTowardsPointIdx += 1
             if self.headingTowardsPointIdx >= self.path.getWaypointCount():
                 self.headingTowardsPointIdx = 0
-            print("-> Now heading to point: " + str(self.headingTowardsPointIdx))
-            # Clear out our velocity so it'll be recalculated on the next move call
-            self.velocityVector = None
 
-    def setNextPoint(self):
-        self.nextPoint = self.path.getWaypoints()[self.headingTowardsPointIdx]
+            # Calc velocity to the new destination
+            self.calcDestinationAndVelocity()
+            print("-> Now heading to point: " + str(self.headingTowardsPointIdx) + " at " + str(self.destinationPoint))
 
     def draw(self):
         super().draw()
-        #drawRect((100,100, 100,100), white, 2)
 
 
 #
