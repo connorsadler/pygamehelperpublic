@@ -81,6 +81,10 @@ class Sprite():
 
     def getLocation(self):
         return (self.x, self.y)
+    
+    def setLocation(self, location):
+        self.x = location[0]
+        self.y = location[1]
 
     def moveBy(self, xvel, yvel):
         self.x += xvel

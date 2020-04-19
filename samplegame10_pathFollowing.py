@@ -10,7 +10,8 @@ from pygamehelper import *
 
 
 # Global init
-pygamehelper.initPygame()
+if __name__ == '__main__':
+    pygamehelper.initPygame()
 
 #
 # TODO
@@ -128,6 +129,7 @@ class MyGameLoop(GameLoop):
     def eachFrame(self):
         pass
 
-pygamehelper.debug = False
-# Run game loop
-MyGameLoop().runGameLoop()
+if __name__ == '__main__':
+    pygamehelper.debug = False
+    # Run game loop
+    MyGameLoop().runGameLoop()
