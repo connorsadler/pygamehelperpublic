@@ -31,10 +31,16 @@ class PathFollowSpriteTest(unittest.TestCase):
         cls.path = s10.Path()
         cls.path.addWaypoint(100,100)
         cls.pathFollowSprite = s10.PathFollowSprite(cls.path)
-        cls.pathFollowSprite.move
 
-    def test_one(self):
-        self.assertEquals(1, 2)
+    def testPathFollowing(self):
+        self.pathFollowSprite.setLocation((90,90))
+        for i in range(0,300):
+            self.pathFollowSprite.move()
+            # TODO: We should assert that the sprite moves to the path points
+
+    # TODO: A test to check a short path
+    # TODO: A test to check a long path
+
 
 if __name__ == '__main__':
     unittest.main()

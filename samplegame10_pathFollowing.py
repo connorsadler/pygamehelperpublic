@@ -63,6 +63,8 @@ class PathFollowSprite(Sprite):
         # Which point we're heading towards
         self.headingTowardsPointIdx = 0
         self.calcDestinationAndVelocity()
+        # Remember the last location so that we can detect if the sprite has been moved by something else, and recalc our velocity
+        self.lastLocation = self.getLocation()
 
     # Calc how to get from our current x,y to the next point
     def calcDestinationAndVelocity(self):
@@ -75,8 +77,14 @@ class PathFollowSprite(Sprite):
         self.velocityVector = scaleVector(self.velocityVector, 0.01)
 
     def move(self):
+        if self.lastLocation != self.getLocation():
+            print("location was changed externally since we last moved - we'll have to recalc the velocity")
+            self.calcDestinationAndVelocity()
+
         # Take a step along the path
         self.moveBy(self.velocityVector[0], self.velocityVector[1])
+        print("new location: " + str(self.getLocation()))
+        self.lastLocation = self.getLocation()
 
         # Check if we're reached the point
         # TODO: This is slightly confusing, to subtract the points as vectors - we should have an 'isVectorEquals' routine, with a tolerance allowed

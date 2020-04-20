@@ -1,4 +1,10 @@
 
+Python in VS Code
+-----------------
+19/04/2020 - switched off "Jedi" with: "python.jediEnabled":false   in settings.json
+             This stopped the jumping around of Run Test CodeLens adornments - see https://github.com/Microsoft/vscode-python/issues/2790
+             Adornments mentioned here: https://code.visualstudio.com/docs/python/testing
+
 
 Windows
 -------
