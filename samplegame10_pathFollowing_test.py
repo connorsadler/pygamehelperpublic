@@ -28,18 +28,45 @@ class PathFollowSpriteTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.path = s10.Path()
-        cls.path.addWaypoint(100,100)
-        cls.pathFollowSprite = s10.PathFollowSprite(cls.path)
+        pass
 
-    def testPathFollowing(self):
-        self.pathFollowSprite.setLocation((90,90))
-        for i in range(0,300):
-            self.pathFollowSprite.move()
-            # TODO: We should assert that the sprite moves to the path points
+    def testPathFollowing_simple(self):
+        path = s10.Path()
+        path.addWaypoint(100,100)
+        pathFollowSprite = s10.PathFollowSprite(path)
+        pathFollowSprite.setLocation((0,0))
+        for i in range(0,100):
+            pathFollowSprite.move()
+
+        # Check that the sprite moves to the path points
+        self.assertEqual(pathFollowSprite.x, 100, "final x should be correct")
+        self.assertEqual(pathFollowSprite.y, 100, "final y should be correct")
 
     # TODO: A test to check a short path
+    def testPathFollowing_shortPath(self):
+        path = s10.Path()
+        path.addWaypoint(10,10)
+        pathFollowSprite = s10.PathFollowSprite(path)
+        pathFollowSprite.setLocation((0,0))
+        for i in range(0,100):
+            pathFollowSprite.move()
+        
+        # Check that the sprite moves to the path points
+        self.assertEqual(pathFollowSprite.x, 100, "final x should be correct")
+        self.assertEqual(pathFollowSprite.y, 100, "final y should be correct")
+
     # TODO: A test to check a long path
+    def testPathFollowing_longPath(self):
+        path = s10.Path()
+        path.addWaypoint(500,500)
+        pathFollowSprite = s10.PathFollowSprite(path)
+        pathFollowSprite.setLocation((0,0))
+        for i in range(0,100):
+            pathFollowSprite.move()
+        
+        # Check that the sprite moves to the path points
+        self.assertEqual(pathFollowSprite.x, 100, "final x should be correct")
+        self.assertEqual(pathFollowSprite.y, 100, "final y should be correct")
 
 
 if __name__ == '__main__':
