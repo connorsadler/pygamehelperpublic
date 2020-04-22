@@ -30,43 +30,42 @@ class PathFollowSpriteTest(unittest.TestCase):
     def setUpClass(cls):
         pass
 
-    def testPathFollowing_simple(self):
+    def runTest(self, spriteStartPoint, spriteDestinationPoint, numberOfMoves, intermediateCheck = None):
+        print(">>> runTest, " + str(spriteStartPoint) + ", " + str(spriteDestinationPoint) + " for moves: " + str(numberOfMoves))
+        
         path = s10.Path()
-        path.addWaypoint(100,100)
+        path.addWaypoint(spriteDestinationPoint[0],spriteDestinationPoint[1])
         pathFollowSprite = s10.PathFollowSprite(path)
-        pathFollowSprite.setLocation((0,0))
-        for i in range(0,100):
+        pathFollowSprite.setLocation((spriteStartPoint[0],spriteStartPoint[1]))
+        for i in range(0,numberOfMoves):
             pathFollowSprite.move()
+            if intermediateCheck:
+                intermediateCheck(i, pathFollowSprite)
 
         # Check that the sprite moves to the path points
-        self.assertEqual(pathFollowSprite.x, 100, "final x should be correct")
-        self.assertEqual(pathFollowSprite.y, 100, "final y should be correct")
+        self.assertEqual(pathFollowSprite.x, spriteDestinationPoint[0], "final x should be correct")
+        self.assertEqual(pathFollowSprite.y, spriteDestinationPoint[1], "final y should be correct")
+
+        print("<<< runTest")
+
+    def testPathFollowing_simple(self):
+        self.runTest((0,0), (100,100), 100)
 
     # TODO: A test to check a short path
     def testPathFollowing_shortPath(self):
-        path = s10.Path()
-        path.addWaypoint(10,10)
-        pathFollowSprite = s10.PathFollowSprite(path)
-        pathFollowSprite.setLocation((0,0))
-        for i in range(0,100):
-            pathFollowSprite.move()
-        
-        # Check that the sprite moves to the path points
-        self.assertEqual(pathFollowSprite.x, 100, "final x should be correct")
-        self.assertEqual(pathFollowSprite.y, 100, "final y should be correct")
+        # TODO: Not sure how many steps to expect it to take
+        self.runTest((0,0), (10,10), 15)
 
     # TODO: A test to check a long path
     def testPathFollowing_longPath(self):
-        path = s10.Path()
-        path.addWaypoint(500,500)
-        pathFollowSprite = s10.PathFollowSprite(path)
-        pathFollowSprite.setLocation((0,0))
-        for i in range(0,100):
-            pathFollowSprite.move()
-        
-        # Check that the sprite moves to the path points
-        self.assertEqual(pathFollowSprite.x, 100, "final x should be correct")
-        self.assertEqual(pathFollowSprite.y, 100, "final y should be correct")
+
+        def intermediateCheck(i, pathFollowSprite): 
+            if i % 100 == 0:
+                self.assertNotEqual(pathFollowSprite.x, 500, "We should not have reached the endpoint yet")
+                self.assertNotEqual(pathFollowSprite.y, 500, "We should not have reached the endpoint yet")
+
+        # TODO: Not sure how many steps to expect it to take
+        self.runTest((0,0), (500,500), 300, intermediateCheck)
 
 
 if __name__ == '__main__':
