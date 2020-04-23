@@ -52,25 +52,27 @@ class PathFollowSpriteTest(unittest.TestCase):
         print("<<< runTest")
 
     def testPathFollowing_simple_defaultStrategy(self):
+        # default strategy always takes 100 steps
         self.runTest(False, (0,0), (100,100), 100)
 
-    # TODO: A test to check a short path
+    # A test to check a short path
     def testPathFollowing_shortPath_defaultStrategy(self):
-        # TODO: Not sure how many steps to expect it to take
+        # default strategy always takes 100 steps
         self.runTest(False, (0,0), (10,10), 100)
 
-    # TODO: A test to check a long path
+    # A test to check a long path
     def testPathFollowing_longPath_defaultStrategy(self):
 
-        # def intermediateCheck(i, pathFollowSprite): 
-        #     if i % 100 == 0:
-        #         self.assertNotEqual(pathFollowSprite.x, 500, "We should not have reached the endpoint yet")
-        #         self.assertNotEqual(pathFollowSprite.y, 500, "We should not have reached the endpoint yet")
+        def intermediateCheck(i, pathFollowSprite): 
+            if i % 10 == 0:
+                self.assertNotEqual(pathFollowSprite.x, 500, "We should not have reached the endpoint yet")
+                self.assertNotEqual(pathFollowSprite.y, 500, "We should not have reached the endpoint yet")
 
-        # TODO: Not sure how many steps to expect it to take
-        self.runTest(False, (0,0), (500,500), 100) # intermediateCheck
+        # default strategy always takes 100 steps
+        self.runTest(False, (0,0), (500,500), 100, intermediateCheck)
 
     def testPathFollowing_simple_altStrategy(self):
+        # Calc is:
         # numSteps: 141.4213562373095
         # velocityVector: (0.7071067811865476, 0.7071067811865476)
         # after 141 steps we are at: 
@@ -78,12 +80,14 @@ class PathFollowSpriteTest(unittest.TestCase):
         #   check: (0.29794385269659074, 0.29794385269659074)
         self.runTest(True, (0,0), (100,100), 142)
 
-    # TODO: A test to check a short path
+    # A test to check a short path
     def testPathFollowing_shortPath_altStrategy(self):
-        # TODO: Not sure how many steps to expect it to take
+        # Calc is:
+        # numSteps: 14.142135623730951
+        # velocityVector: (0.7071067811865475, 0.7071067811865475)
         self.runTest(True, (0,0), (10,10), 15)
 
-    # TODO: A test to check a long path
+    # A test to check a long path
     def testPathFollowing_longPath_altStrategy(self):
 
         def intermediateCheck(i, pathFollowSprite): 
