@@ -71,7 +71,12 @@ class PathFollowSpriteTest(unittest.TestCase):
         self.runTest(False, (0,0), (500,500), 100) # intermediateCheck
 
     def testPathFollowing_simple_altStrategy(self):
-        self.runTest(True, (0,0), (100,100), 2)
+        # numSteps: 141.4213562373095
+        # velocityVector: (0.7071067811865476, 0.7071067811865476)
+        # after 141 steps we are at: 
+        #   new location: (99.70205614730341, 99.70205614730341)
+        #   check: (0.29794385269659074, 0.29794385269659074)
+        self.runTest(True, (0,0), (100,100), 142)
 
     # TODO: A test to check a short path
     def testPathFollowing_shortPath_altStrategy(self):
@@ -86,8 +91,10 @@ class PathFollowSpriteTest(unittest.TestCase):
                 self.assertNotEqual(pathFollowSprite.x, 500, "We should not have reached the endpoint yet")
                 self.assertNotEqual(pathFollowSprite.y, 500, "We should not have reached the endpoint yet")
 
-        # TODO: Not sure how many steps to expect it to take
-        self.runTest(True, (0,0), (500,500), 300, intermediateCheck)
+        # Calc is:
+        # numSteps: 707.1067811865476
+        # velocityVector: (0.7071067811865475, 0.7071067811865475)
+        self.runTest(True, (0,0), (500,500), 708, intermediateCheck)
 
 
 if __name__ == '__main__':
