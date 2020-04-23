@@ -577,6 +577,10 @@ def isVectorZero(v, tolerance):
         return True
     return False
 
+# use Pythagoras's theorem to work out size (length) of vector
+def getVectorSize(v):
+    return math.sqrt(v[0] * v[0] + v[1] * v[1])
+
 def flipYCoord(point):
     return (point[0], -point[1])
 

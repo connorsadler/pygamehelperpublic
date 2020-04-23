@@ -60,11 +60,18 @@ class PathFollowSprite(Sprite):
     def __init__(self, path):
         super().__init__(200, 0, 10, 10)
         self.path = path
+        # advanced mode?
+        self.pathFollowModeAlternate = False
         # Which point we're heading towards
         self.headingTowardsPointIdx = 0
         self.calcDestinationAndVelocity()
         # Remember the last location so that we can detect if the sprite has been moved by something else, and recalc our velocity
         self.lastLocation = self.getLocation()
+
+    def setPathFollowModeAlternate(self, val):
+        self.pathFollowModeAlternate = val
+        # Force a recalc on next 'move' call
+        self.velocityVector = None
 
     # Calc how to get from our current x,y to the next point
     def calcDestinationAndVelocity(self):
@@ -74,11 +81,18 @@ class PathFollowSprite(Sprite):
         # velocityVector is the amount to move on each step along the path to the destination point
         # TODO: How to tell how many steps to take on this leg of the path?
         self.velocityVector = subtractVectors(self.destinationPoint, self.getLocation())
-        self.velocityVector = scaleVector(self.velocityVector, 0.01)
+        if self.pathFollowModeAlternate:
+            print("alternate/advanced mode")
+            numSteps = getVectorSize(self.velocityVector)
+        else:
+            print("simple mode - fixed 100 steps")
+            numSteps = 100
+        print("numSteps: " + str(numSteps))
+        self.velocityVector = scaleVector(self.velocityVector, 1 / numSteps)
 
     def move(self):
-        if self.lastLocation != self.getLocation():
-            print("location was changed externally since we last moved - we'll have to recalc the velocity")
+        if self.lastLocation != self.getLocation() or self.velocityVector == None:
+            print("Something was changed since we last moved - we'll have to recalc the velocity")
             self.calcDestinationAndVelocity()
 
         # Take a step along the path
@@ -102,7 +116,6 @@ class PathFollowSprite(Sprite):
 
     def draw(self):
         super().draw()
-
 
 #
 # Game loop logic

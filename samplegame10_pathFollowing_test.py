@@ -30,13 +30,16 @@ class PathFollowSpriteTest(unittest.TestCase):
     def setUpClass(cls):
         pass
 
-    def runTest(self, spriteStartPoint, spriteDestinationPoint, numberOfMoves, intermediateCheck = None):
-        print(">>> runTest, " + str(spriteStartPoint) + ", " + str(spriteDestinationPoint) + " for moves: " + str(numberOfMoves))
+    def runTest(self, alternateMode, spriteStartPoint, spriteDestinationPoint, numberOfMoves, intermediateCheck = None):
+        print(">>> runTest, alternateMode: " + str(alternateMode) + ", start: " + str(spriteStartPoint) + " dest: " + str(spriteDestinationPoint) + " for moves: " + str(numberOfMoves))
         
         path = s10.Path()
         path.addWaypoint(spriteDestinationPoint[0],spriteDestinationPoint[1])
         pathFollowSprite = s10.PathFollowSprite(path)
         pathFollowSprite.setLocation((spriteStartPoint[0],spriteStartPoint[1]))
+        if alternateMode:
+            pathFollowSprite.setPathFollowModeAlternate(True)
+
         for i in range(0,numberOfMoves):
             pathFollowSprite.move()
             if intermediateCheck:
@@ -48,16 +51,35 @@ class PathFollowSpriteTest(unittest.TestCase):
 
         print("<<< runTest")
 
-    def testPathFollowing_simple(self):
-        self.runTest((0,0), (100,100), 100)
+    def testPathFollowing_simple_defaultStrategy(self):
+        self.runTest(False, (0,0), (100,100), 100)
 
     # TODO: A test to check a short path
-    def testPathFollowing_shortPath(self):
+    def testPathFollowing_shortPath_defaultStrategy(self):
         # TODO: Not sure how many steps to expect it to take
-        self.runTest((0,0), (10,10), 15)
+        self.runTest(False, (0,0), (10,10), 100)
 
     # TODO: A test to check a long path
-    def testPathFollowing_longPath(self):
+    def testPathFollowing_longPath_defaultStrategy(self):
+
+        # def intermediateCheck(i, pathFollowSprite): 
+        #     if i % 100 == 0:
+        #         self.assertNotEqual(pathFollowSprite.x, 500, "We should not have reached the endpoint yet")
+        #         self.assertNotEqual(pathFollowSprite.y, 500, "We should not have reached the endpoint yet")
+
+        # TODO: Not sure how many steps to expect it to take
+        self.runTest(False, (0,0), (500,500), 100) # intermediateCheck
+
+    def testPathFollowing_simple_altStrategy(self):
+        self.runTest(True, (0,0), (100,100), 2)
+
+    # TODO: A test to check a short path
+    def testPathFollowing_shortPath_altStrategy(self):
+        # TODO: Not sure how many steps to expect it to take
+        self.runTest(True, (0,0), (10,10), 15)
+
+    # TODO: A test to check a long path
+    def testPathFollowing_longPath_altStrategy(self):
 
         def intermediateCheck(i, pathFollowSprite): 
             if i % 100 == 0:
@@ -65,7 +87,7 @@ class PathFollowSpriteTest(unittest.TestCase):
                 self.assertNotEqual(pathFollowSprite.y, 500, "We should not have reached the endpoint yet")
 
         # TODO: Not sure how many steps to expect it to take
-        self.runTest((0,0), (500,500), 300, intermediateCheck)
+        self.runTest(True, (0,0), (500,500), 300, intermediateCheck)
 
 
 if __name__ == '__main__':
