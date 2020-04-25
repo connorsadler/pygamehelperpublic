@@ -755,6 +755,7 @@ class PathFollowMoveHandler:
         self.pathFollowModeAlternate = pathFollowModeAlternate
 
         # TODO: Add 'speed' variable
+        # TODO: Add hook to run when we reach end of path
 
         # Which point we're heading towards
         self.headingTowardsPointIdx = 0
