@@ -19,6 +19,28 @@ if __name__ == '__main__':
 #
 
 
+
+#
+# An Invader - rotates around and moves
+# 
+class Invader(SpriteWithImage):
+    def __init__(self, x, y, velocity, startAngle, angleChangeSpeed):
+        super().__init__(x, y, 'invader.png')
+        self.velocity = velocity
+        self.angle = startAngle
+        self.angleChangeSpeed = angleChangeSpeed
+
+    def move(self):
+        
+        self.rotateBy(self.angleChangeSpeed)
+        
+        # If we have a moveHandler we will delegate to that
+        # TODO: Should the framework still call 'move' if there is a moveHandler on the Sprite? Might be cleaner if not?
+        if self.moveHandler:
+            self.moveHandler.move(self)
+        else:
+            self.moveBy(self.velocity[0], self.velocity[1])
+
 #
 # Game loop logic
 #
@@ -43,6 +65,11 @@ class MyGameLoop(GameLoop):
         pygamehelper.addSprite(PathDrawer(path))
         # PathFollowSprite will move along the path
         pygamehelper.addSprite(PathFollowSprite(path))
+
+        # Tag an existing Invader sprite with a moveHandler
+        invader = Invader(20, 20, (1,1), 0, 1)
+        PathFollowMoveHandler.installForSprite(invader, path)
+        pygamehelper.addSprite(invader)
 
     #
     # TODO

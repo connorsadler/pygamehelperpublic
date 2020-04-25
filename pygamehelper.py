@@ -106,6 +106,9 @@ class Sprite():
         else:
             self.boundingRect = pygame.Rect(self.x, self.y, self.width, self.height)
 
+    def setMoveHandler(self, moveHandler):
+        self.moveHandler = moveHandler
+
     def isOnScreen(self):
         return self.boundingRect.colliderect(getScreenRect())
 
@@ -741,6 +744,8 @@ class PathFollowSprite(Sprite):
 # PathFollowMoveHandler
 # 
 # The main logic to follow a path
+# You can install one of these using: PathFollowMoveHandler.installForSprite
+#
 # If you have multiple sprites following the same path, you'll need an instance per sprite, because various
 # sprite-instance-specific values are stored in an instance of PathFollowMoveHandler
 # 
@@ -762,6 +767,11 @@ class PathFollowMoveHandler:
         self.calcDestinationAndVelocity()
         # Remember the last location so that we can detect if the sprite has been moved by something else, and recalc our velocity
         self.lastLocation = sprite.getLocation()
+
+    @staticmethod
+    def installForSprite(sprite, path):
+        moveHandler = PathFollowMoveHandler(sprite, path, True)
+        sprite.setMoveHandler(moveHandler)
 
     def setPathFollowModeAlternate(self, val):
         self.pathFollowModeAlternate = val
