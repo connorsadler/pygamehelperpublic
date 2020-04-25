@@ -731,7 +731,7 @@ class PathDrawer(Sprite):
 class PathFollowSprite(Sprite):
     def __init__(self, path):
         super().__init__(200, 0, 10, 10)
-        pathFollowModeAlternateDefault = False
+        pathFollowModeAlternateDefault = True
         self.moveHandler = PathFollowMoveHandler(self, path, pathFollowModeAlternateDefault)
 
     def setPathFollowModeAlternate(self, val):
