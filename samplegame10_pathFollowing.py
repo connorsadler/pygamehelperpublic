@@ -55,10 +55,30 @@ class PathDrawer(Sprite):
 
 #
 # PathFollowSprite
+#
+# Doesnt really do much now - you don't really need one of these - just tag your sprite
+# with a PathFollowMoveHandler as it's moveHandler
 # 
 class PathFollowSprite(Sprite):
-    def __init__(self, path, pathFollowModeAlternate = False):
+    def __init__(self, path):
         super().__init__(200, 0, 10, 10)
+        pathFollowModeAlternateDefault = False
+        self.moveHandler = PathFollowMoveHandler(self, path, pathFollowModeAlternateDefault)
+
+    def setPathFollowModeAlternate(self, val):
+        self.moveHandler.setPathFollowModeAlternate(val)
+
+#
+# PathFollowMoveHandler
+# 
+# The main logic to follow a path
+# If you have multiple sprites following the same path, you'll need an instance per sprite, because various
+# sprite-instance-specific values are stored in an instance of PathFollowMoveHandler
+# 
+class PathFollowMoveHandler:
+    def __init__(self, sprite, path, pathFollowModeAlternate = False):
+        super().__init__()
+        self.sprite = sprite
         self.path = path
         # pathFollowModeAlternate
         # True - "advanced" mode which means we calc the number of steps to get from the current point to the destination point
@@ -71,7 +91,7 @@ class PathFollowSprite(Sprite):
         self.headingTowardsPointIdx = 0
         self.calcDestinationAndVelocity()
         # Remember the last location so that we can detect if the sprite has been moved by something else, and recalc our velocity
-        self.lastLocation = self.getLocation()
+        self.lastLocation = sprite.getLocation()
 
     def setPathFollowModeAlternate(self, val):
         self.pathFollowModeAlternate = val
@@ -85,7 +105,7 @@ class PathFollowSprite(Sprite):
 
         # velocityVector is the amount to move on each step along the path to the destination point
         # TODO: How to tell how many steps to take on this leg of the path?
-        self.velocityVector = subtractVectors(self.destinationPoint, self.getLocation())
+        self.velocityVector = subtractVectors(self.destinationPoint, self.sprite.getLocation())
         if self.pathFollowModeAlternate:
             print("alternate/advanced mode")
             numSteps = getVectorSize(self.velocityVector)
@@ -99,25 +119,26 @@ class PathFollowSprite(Sprite):
             self.velocityVector = (0, 0)
         print("velocityVector: " + str(self.velocityVector))
 
-    def move(self):
-        if self.lastLocation != self.getLocation() or self.velocityVector == None:
+    # We always assume the sprite passed is our sprite
+    def move(self, sprite):
+        if self.lastLocation != sprite.getLocation() or self.velocityVector == None:
             print("Something was changed since we last moved - we'll have to recalc the velocity")
             self.calcDestinationAndVelocity()
 
         # Take a step along the path
-        self.moveBy(self.velocityVector[0], self.velocityVector[1])
-        print("new location: " + str(self.getLocation()))
-        self.lastLocation = self.getLocation()
+        self.sprite.moveBy(self.velocityVector[0], self.velocityVector[1])
+        print("new location: " + str(self.sprite.getLocation()))
+        self.lastLocation = sprite.getLocation()
 
         # Check if we're reached the point
         # TODO: This is slightly confusing, to subtract the points as vectors - we should have an 'isVectorEquals' routine, with a tolerance allowed
-        check = subtractVectors(self.destinationPoint, self.getLocation())
+        check = subtractVectors(self.destinationPoint, self.sprite.getLocation())
         print("check: " + str(check))
         if isVectorZero(check, 0.01):
             # We reached a point - 
             print("We reached point: " + str(self.headingTowardsPointIdx))
             # Ensure we're directly on the point now
-            self.setLocation(self.destinationPoint)
+            self.sprite.setLocation(self.destinationPoint)
 
             # Now head to the next path point
             self.headingTowardsPointIdx += 1
@@ -137,9 +158,6 @@ class PathFollowSprite(Sprite):
     # TODO: Check this with negative numbers
     def isNextToDestination(self, check):
         return abs(check[0]) < abs(self.velocityVector[0]) and abs(check[1]) < abs(self.velocityVector[1])
-
-    def draw(self):
-        super().draw()
 
 #
 # Game loop logic
@@ -164,7 +182,7 @@ class MyGameLoop(GameLoop):
         # PathDrawer will draw the path as lines
         pygamehelper.addSprite(PathDrawer(path))
         # PathFollowSprite will move along the path
-        pygamehelper.addSprite(PathFollowSprite(path, True))
+        pygamehelper.addSprite(PathFollowSprite(path))
 
     #
     # TODO
