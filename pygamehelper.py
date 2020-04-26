@@ -749,7 +749,7 @@ class PathFollowSprite(Sprite):
 # If you have multiple sprites following the same path, you'll need an instance per sprite, because various
 # sprite-instance-specific values are stored in an instance of PathFollowMoveHandler
 # 
-class PathFollowMoveHandler:
+class PathFollowMoveHandler(MoveHandler):
     def __init__(self, sprite, path, pathFollowModeAlternate = False):
         super().__init__()
         self.sprite = sprite
@@ -770,8 +770,9 @@ class PathFollowMoveHandler:
 
     @staticmethod
     def installForSprite(sprite, path):
-        moveHandler = PathFollowMoveHandler(sprite, path, True)
-        sprite.setMoveHandler(moveHandler)
+        pathFollowMoveHandler = PathFollowMoveHandler(sprite, path, True)
+        sprite.setMoveHandler(pathFollowMoveHandler)
+        return pathFollowMoveHandler
 
     def setPathFollowModeAlternate(self, val):
         self.pathFollowModeAlternate = val
@@ -823,6 +824,8 @@ class PathFollowMoveHandler:
             # Now head to the next path point
             self.headingTowardsPointIdx += 1
             if self.headingTowardsPointIdx >= self.path.getWaypointCount():
+                # There is no next path point - what should we do?
+                # TODO: ???
                 self.headingTowardsPointIdx = 0
 
             # Calc velocity to the new destination

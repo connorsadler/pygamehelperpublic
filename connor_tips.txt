@@ -39,6 +39,8 @@ Other good ones:
     Ctrl + Shift + P
         "Open Settings json"     - Open user settings json
 
+    Ctrl + K -> Enter       - Keep file open (turn temporary preview editor into a full one)
+
 GitLens
 -------
 Settings: Do Ctrl + Shift + P and type "GitLens: Open Settings"
