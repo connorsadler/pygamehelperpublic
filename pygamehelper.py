@@ -9,6 +9,7 @@ from pygame.locals import *
 import random
 import math
 import os
+import enum
 
 display_width = 800
 display_height = 600
@@ -82,9 +83,15 @@ class Sprite():
     def getLocation(self):
         return (self.x, self.y)
     
+    # Alternately you can use: setLocationAnimated
     def setLocation(self, location):
         self.x = location[0]
         self.y = location[1]
+
+    def setLocationAnimated(self, location):
+        path = Path()
+        path.addWaypoint(location[0], location[1])
+        PathFollowMoveHandler.installForSprite(self, path)
 
     def moveBy(self, xvel, yvel):
         self.x += xvel
@@ -143,6 +150,14 @@ class Sprite():
     def handleCollisions(self, collidedWithSprites):
         pass
 
+    # find list of sprites that we're overlapping
+    def findSpritesOverlapping(self):
+        return findCollisions(self)
+
+    # does this sprite overlap otherSprite
+    def isOverlapping(self, otherSprite):
+        return self.getBoundingRect().colliderect(otherSprite.getBoundingRect())
+
     def draw(self):
         if self.imageDrawingHelper:
             if self.debugDrawBoundingRect:
@@ -153,6 +168,9 @@ class Sprite():
             # If there's an imageDrawingHelper, we dont draw the white background for this sprite
             # By default our rect starts from x,y and extends by width-height
             pygame.draw.rect(gameDisplay, white, self.boundingRect)
+
+    def setDrawMode(self, drawMode):
+        self.imageDrawingHelper.setDrawMode(drawMode)
 
     def getBoundingRect(self):
         return self.boundingRect
@@ -174,6 +192,9 @@ class Sprite():
 
     def drawDebug(self):
         pygame.draw.rect(gameDisplay, red, self.boundingRect, 1)
+
+    def setCostume(self, costumeIndex):
+        self.changeCostume(costumeIndex)
 
     # Only works if we have a self.imageDrawingHelper
     def changeCostume(self, costumeIndex):
@@ -211,6 +232,10 @@ class SpriteWithText(Sprite):
     def draw(self):
         drawText(self.text, self.x, self.y, self.font, self.colour)
 
+class DrawMode(enum.Enum):
+    XY_IS_UPPER_LEFT = enum.auto()
+    XY_IS_CENTRE = enum.auto()
+
 # 
 # Helper class which implements a Sprite with image (or images aka costumes)
 # This also can optionally rotate the images
@@ -240,6 +265,13 @@ class SpriteImageDrawingHelper():
         self.sprite.width = imageSize[0]
         self.sprite.height = imageSize[1]
 
+        # Default to drawing the sprite with the centre of it's image at x,y
+        # This can be changed to draw with x,y as top left instead if required
+        self.drawMode = DrawMode.XY_IS_CENTRE
+
+    def setDrawMode(self, drawMode):
+        self.drawMode = drawMode
+
     def changeCostume(self, costumeIndex):
         self.imageHandler.changeCostume(costumeIndex)
 
@@ -266,7 +298,11 @@ class SpriteImageDrawingHelper():
         # Not sure how important sprite.width/height are TODO: Maybe we can tidy that up?
         self.sprite.width = self.imageRotated.get_size()[0]
         self.sprite.height = self.imageRotated.get_size()[1]
-        self.sprite.boundingRect = calcBoundingRectCenteredOnXY(self.sprite.x, self.sprite.y, self.sprite.width, self.sprite.height)
+        if self.drawMode == DrawMode.XY_IS_CENTRE:
+            boundingRect = calcBoundingRectCenteredOnXY(self.sprite.x, self.sprite.y, self.sprite.width, self.sprite.height)
+        else:
+            boundingRect = pygame.Rect(self.sprite.x, self.sprite.y, self.sprite.width, self.sprite.height)
+        self.sprite.boundingRect = boundingRect
 
     def prepareSpriteImage(self):
         result = self.imageHandler.getSpriteImage()
@@ -277,8 +313,11 @@ class SpriteImageDrawingHelper():
         return result
 
     def draw(self):
-        # draw the image, centred on x,y - so that any rotation looks good
-        drawImageCentered(self.imageRotated, self.sprite.x, self.sprite.y, self.sprite.clipArea)
+        if self.drawMode == DrawMode.XY_IS_CENTRE:
+            # draw the image, centred on x,y - so that any rotation looks good
+            drawImageCentered(self.imageRotated, self.sprite.x, self.sprite.y, self.sprite.clipArea)
+        else:
+            drawImage(self.imageRotated, self.sprite.x, self.sprite.y, self.sprite.clipArea)
 
 # Try to find an image file given a base name e.g. invader.jpg
 # We can try whatever prefixes we like
@@ -412,6 +451,21 @@ class MoveHandler:
         pass
 
 #
+# Composite List of MoveHandler instances
+# TODO: Make use of this somewhere
+#
+class MoveHandlerList(MoveHandler):
+    def __init__(self):
+        self.moveHandlerList = []
+
+    def addMoveHandler(self, moveHandler):
+        self.moveHandlerList.append(moveHandler)
+
+    def move(self, sprite):
+        for moveHandler in self.moveHandlerList:
+            moveHandler.move(sprite)
+
+#
 # Move handler which simply kills the sprite after a certain number of game ticks
 #
 class MoveHandlerTimeout(MoveHandler):
@@ -486,6 +540,14 @@ def findSprites2(x, y):
         if sprite.getBoundingRect().collidepoint(x, y):
             result.append(sprite)
     return result
+
+def findSpritesByCondition(condition):
+    result = []
+    for sprite in sprites:
+        if condition(sprite):
+            result.append(sprite)
+    return result
+
 
 def findCollisions(sprite):
     result = []

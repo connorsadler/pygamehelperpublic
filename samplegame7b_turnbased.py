@@ -168,6 +168,7 @@ class GridPiece(GridPieceBase):
         self.highlightDrawer = HighlightDrawer(yellow, True)
 
     def move(self):
+        # TODO: Rewrite with moveHandler pattern
         if self.mover == None:
             super().move()
         else:
