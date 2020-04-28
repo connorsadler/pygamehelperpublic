@@ -119,7 +119,7 @@ class MyGameLoop(GameLoop):
         addSprite(Card(50, 200, 2))
         # List of Slots to move cards to
         for i in range(5):
-            addSprite(Slot(400, 20 + (i * 100)))
+            addSprite(Slot(200, 20 + (i * 100)))
 
     #
     # TODO

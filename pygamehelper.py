@@ -91,7 +91,13 @@ class Sprite():
     def setLocationAnimated(self, location):
         path = Path()
         path.addWaypoint(location[0], location[1])
-        PathFollowMoveHandler.installForSprite(self, path)
+        pathFollowMoveHandler = PathFollowMoveHandler.installForSprite(self, path)
+        # At end of path, clear the moveHandler to stop the animation
+        pathFollowMoveHandler.setEndOfPathHook(self.clearMoveHandler)
+
+    def clearMoveHandler(self):
+        print("clearMoveHandler running")
+        self.moveHandler = None
 
     def moveBy(self, xvel, yvel):
         self.x += xvel
@@ -822,7 +828,9 @@ class PathFollowMoveHandler(MoveHandler):
         self.pathFollowModeAlternate = pathFollowModeAlternate
 
         # TODO: Add 'speed' variable
-        # TODO: Add hook to run when we reach end of path
+
+        # Hook to run when we reach end of path
+        self.endOfPathHook = None
 
         # Which point we're heading towards
         self.headingTowardsPointIdx = 0
@@ -840,6 +848,9 @@ class PathFollowMoveHandler(MoveHandler):
         self.pathFollowModeAlternate = val
         # Force a recalc on next 'move' call
         self.velocityVector = None
+
+    def setEndOfPathHook(self, endOfPathHook):
+        self.endOfPathHook = endOfPathHook
 
     # Calc how to get from our current x,y to the next point
     def calcDestinationAndVelocity(self):
@@ -870,15 +881,15 @@ class PathFollowMoveHandler(MoveHandler):
 
         # Take a step along the path
         self.sprite.moveBy(self.velocityVector[0], self.velocityVector[1])
-        print("new location: " + str(self.sprite.getLocation()))
+        #print("new location: " + str(self.sprite.getLocation()))
         self.lastLocation = sprite.getLocation()
 
         # Check if we're reached the point
         # TODO: This is slightly confusing, to subtract the points as vectors - we should have an 'isVectorEquals' routine, with a tolerance allowed
         check = subtractVectors(self.destinationPoint, self.sprite.getLocation())
-        print("check: " + str(check))
+        #print("check: " + str(check))
         if isVectorZero(check, 0.01):
-            # We reached a point - 
+            # We reached a point
             print("We reached point: " + str(self.headingTowardsPointIdx))
             # Ensure we're directly on the point now
             self.sprite.setLocation(self.destinationPoint)
@@ -886,9 +897,13 @@ class PathFollowMoveHandler(MoveHandler):
             # Now head to the next path point
             self.headingTowardsPointIdx += 1
             if self.headingTowardsPointIdx >= self.path.getWaypointCount():
-                # There is no next path point - what should we do?
-                # TODO: ???
+                # There is no next path point - what should we do? By default we wrap round and go back to the first point
                 self.headingTowardsPointIdx = 0
+                # Call hook if any - this could stop the movement
+                if self.endOfPathHook:
+                    print("calling endOfPathHook")
+                    self.endOfPathHook()
+                    # TODO: Maybe if endOfPathHook returns a False we could just return or something?
 
             # Calc velocity to the new destination
             self.calcDestinationAndVelocity()
