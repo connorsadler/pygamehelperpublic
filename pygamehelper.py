@@ -929,7 +929,7 @@ class PathFollowMoveHandler(MoveHandler):
     # If we're less than our velocity away
     # TODO: Check this with negative numbers
     def isNextToDestination(self, check):
-        return abs(check[0]) < abs(self.velocityVector[0]) and abs(check[1]) < abs(self.velocityVector[1])
+        return abs(check[0]) <= abs(self.velocityVector[0]) and abs(check[1]) <= abs(self.velocityVector[1])
 
 #-----------------------------------------------------------------------------
 # Path stuff ends

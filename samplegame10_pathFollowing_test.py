@@ -103,8 +103,19 @@ class PathFollowSpriteTest(unittest.TestCase):
         self.runTest(True, (0,0), (500,500), 708, intermediateCheck)
 
     def testPathFollowing_simple_altStrategy_speed3(self):
-        # TODO
-        self.runTest(True, (0,0), (100,100), 142, None, 3)
+        # Only takes 48 moves now to get there
+        self.runTest(True, (0,0), (100,100), 48, None, 3)
+
+    # A test to check a short horizontal path with speed 3
+    def testPathFollowing_shortHorizontalPath_altStrategy_speed3(self):
+        # Calc is:
+        # checking location vs destination
+        #   location: (0, 0)
+        #   destination: (10, 0)
+        # alternate/advanced mode, with speed: 3
+        # numSteps: 3.3333333333333335
+        # velocityVector: (3.0, 0.0)
+        self.runTest(True, (0,0), (10,0), 5, None, 3)
 
     def testPathFollowing_shortPath_altStrategy_speed3(self):
         # TODO
