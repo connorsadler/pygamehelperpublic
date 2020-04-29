@@ -898,7 +898,7 @@ class PathFollowMoveHandler(MoveHandler):
         # Check if we're reached the point
         # TODO: This is slightly confusing, to subtract the points as vectors - we should have an 'isVectorEquals' routine, with a tolerance allowed
         check = subtractVectors(self.destinationPoint, self.sprite.getLocation())
-        print("move, location: " + str(self.sprite.getLocation() + ", destination: " + str(self.destinationPoint) + ", check: " + str(check))
+        print("move, location: " + str(self.sprite.getLocation()) + ", destination: " + str(self.destinationPoint) + ", check: " + str(check))
 
         if isVectorZero(check, 0.01):
             # We reached a point
