@@ -30,17 +30,19 @@ class PathFollowSpriteTest(unittest.TestCase):
     def setUpClass(cls):
         pass
 
-    def runTest(self, alternateMode, spriteStartPoint, spriteDestinationPoint, numberOfMoves, intermediateCheck = None):
+    def runTest(self, alternateMode, spriteStartPoint, spriteDestinationPoint, numberOfMoves, intermediateCheck = None, speed = None):
         print(">>> runTest, alternateMode: " + str(alternateMode) + ", start: " + str(spriteStartPoint) + " dest: " + str(spriteDestinationPoint) + " for moves: " + str(numberOfMoves))
         
         path = s10.Path()
         path.addWaypoint(spriteDestinationPoint[0],spriteDestinationPoint[1])
         pathFollowSprite = s10.PathFollowSprite(path)
         pathFollowSprite.setLocation((spriteStartPoint[0],spriteStartPoint[1]))
-        if alternateMode:
-            pathFollowSprite.setPathFollowModeAlternate(True)
+        pathFollowSprite.setPathFollowModeAlternate(alternateMode)
+        if speed:
+            pathFollowSprite.getMoveHandler().setSpeed(speed)
 
         for i in range(0,numberOfMoves):
+            print("move: " + str(i+1))
             pathFollowSprite.move()
             if intermediateCheck:
                 intermediateCheck(i, pathFollowSprite)
@@ -99,6 +101,23 @@ class PathFollowSpriteTest(unittest.TestCase):
         # numSteps: 707.1067811865476
         # velocityVector: (0.7071067811865475, 0.7071067811865475)
         self.runTest(True, (0,0), (500,500), 708, intermediateCheck)
+
+    def testPathFollowing_simple_altStrategy_speed3(self):
+        # TODO
+        self.runTest(True, (0,0), (100,100), 142, None, 3)
+
+    def testPathFollowing_shortPath_altStrategy_speed3(self):
+        # TODO
+        self.runTest(True, (0,0), (10,10), 15, None, 3)
+
+    def testPathFollowing_longPath_altStrategy_speed3(self):
+        def intermediateCheck(i, pathFollowSprite): 
+            if i % 100 == 0:
+                self.assertNotEqual(pathFollowSprite.x, 500, "We should not have reached the endpoint yet")
+                self.assertNotEqual(pathFollowSprite.y, 500, "We should not have reached the endpoint yet")
+
+        # 708/3 approx = 236
+        self.runTest(True, (0,0), (500,500), 236, intermediateCheck, 3)
 
 
 if __name__ == '__main__':

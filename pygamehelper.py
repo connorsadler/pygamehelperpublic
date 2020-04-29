@@ -122,6 +122,9 @@ class Sprite():
     def setMoveHandler(self, moveHandler):
         self.moveHandler = moveHandler
 
+    def getMoveHandler(self):
+        return self.moveHandler
+
     def isOnScreen(self):
         return self.boundingRect.colliderect(getScreenRect())
 
@@ -827,7 +830,8 @@ class PathFollowMoveHandler(MoveHandler):
         # False - "simple" mode which means we always take 100 steps between points, no matter how far it is
         self.pathFollowModeAlternate = pathFollowModeAlternate
 
-        # TODO: Add 'speed' variable
+        # speed with which we move - approx equal to number of pixels to move per step
+        self.speed = 1
 
         # Hook to run when we reach end of path
         self.endOfPathHook = None
@@ -852,17 +856,24 @@ class PathFollowMoveHandler(MoveHandler):
     def setEndOfPathHook(self, endOfPathHook):
         self.endOfPathHook = endOfPathHook
 
+    def setSpeed(self, speed):
+        self.speed = speed
+        # Force a recalc on next 'move' call
+        self.velocityVector = None
+
     # Calc how to get from our current x,y to the next point
     def calcDestinationAndVelocity(self):
         # Grab point which we're currently going to head towards
         self.destinationPoint = self.path.getWaypoints()[self.headingTowardsPointIdx]
 
         # velocityVector is the amount to move on each step along the path to the destination point
-        # TODO: How to tell how many steps to take on this leg of the path?
+        print("checking location vs destination")
+        print("  location: " + str(self.sprite.getLocation()))
+        print("  destination: " + str(self.destinationPoint))
         self.velocityVector = subtractVectors(self.destinationPoint, self.sprite.getLocation())
         if self.pathFollowModeAlternate:
-            print("alternate/advanced mode")
-            numSteps = getVectorSize(self.velocityVector)
+            print("alternate/advanced mode, with speed: " + str(self.speed))
+            numSteps = getVectorSize(self.velocityVector) / self.speed
         else:
             print("simple mode - fixed 100 steps")
             numSteps = 100
@@ -887,7 +898,8 @@ class PathFollowMoveHandler(MoveHandler):
         # Check if we're reached the point
         # TODO: This is slightly confusing, to subtract the points as vectors - we should have an 'isVectorEquals' routine, with a tolerance allowed
         check = subtractVectors(self.destinationPoint, self.sprite.getLocation())
-        #print("check: " + str(check))
+        print("move, location: " + str(self.sprite.getLocation() + ", destination: " + str(self.destinationPoint) + ", check: " + str(check))
+
         if isVectorZero(check, 0.01):
             # We reached a point
             print("We reached point: " + str(self.headingTowardsPointIdx))

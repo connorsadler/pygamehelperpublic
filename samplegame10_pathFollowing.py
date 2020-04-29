@@ -68,7 +68,8 @@ class MyGameLoop(GameLoop):
 
         # Tag an existing Invader sprite with a moveHandler
         invader = Invader(20, 20, (1,1), 0, 1)
-        PathFollowMoveHandler.installForSprite(invader, path)
+        # TODO: The setSpeed(3) causes us to miss a point...
+        PathFollowMoveHandler.installForSprite(invader, path).setSpeed(3)
         # TODO: We could tailor the pathFollowMoveHandler here? e.g. with a fluent ".withStopAtEndOfPath" method?
         # PathFollowMoveHandler.installForSprite(invader, path).withStopAtEndOfPath()
         # TODO: Add a basic test for this also
