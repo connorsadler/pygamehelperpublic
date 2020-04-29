@@ -100,7 +100,8 @@ class Slot(Sprite):
         # Move them all here
         for selectedCard in selectedCards:
             selectedCard.setSelected(False)
-            selectedCard.setLocationAnimated(self.getLocation())
+            # Animate the move - use a higher speed to make the card moves quick
+            selectedCard.setLocationAnimated(self.getLocation(), 5)
 
 #
 # Game loop logic

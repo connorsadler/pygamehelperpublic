@@ -88,10 +88,11 @@ class Sprite():
         self.x = location[0]
         self.y = location[1]
 
-    def setLocationAnimated(self, location):
+    def setLocationAnimated(self, location, speed = 1):
         path = Path()
         path.addWaypoint(location[0], location[1])
         pathFollowMoveHandler = PathFollowMoveHandler.installForSprite(self, path)
+        pathFollowMoveHandler.setSpeed(speed)
         # At end of path, clear the moveHandler to stop the animation
         pathFollowMoveHandler.setEndOfPathHook(self.clearMoveHandler)
 
