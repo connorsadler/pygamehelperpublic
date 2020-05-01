@@ -49,13 +49,18 @@ class Tank(SpriteWithImage):
         self.pointTurrentTo = point
 
     def onClick(self, point):
+        # work out where end of turret is
+        turretVector = self.turret.getTurretVector()
+        endOfTurret = addVectors((self.x, self.y), turretVector)
+
         # Spawn a bullet facing in the same direction as our turret
-        bullet = Bullet(self.x, self.y, self.turret.getAngle())
+        bullet = Bullet(endOfTurret[0], endOfTurret[1], self.turret.getAngle())
         addSprite(bullet)
 
 class Turret(SpriteWithImage):
     def __init__(self, tank):
-        super().__init__(0, 0, TurrentImageDrawer())
+        self.turretLength = 150
+        super().__init__(0, 0, TurrentImageDrawer(self.turretLength))
         self.tank = tank
 
     def move(self):
@@ -64,13 +69,15 @@ class Turret(SpriteWithImage):
     def draw(self):
         super().draw()
 
+    def getTurretVector(self):
+        return angleToVector(self.angle, self.turretLength)
+
 #
 # Draws the look of the turret onto it's internal image
 #
 class TurrentImageDrawer(CustomDrawingImageHandler):
-    def __init__(self):
+    def __init__(self, turretLength):
         width = 10
-        turretLength = 50
         height = turretLength * 2
         super().__init__(width, height)
 
