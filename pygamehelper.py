@@ -77,8 +77,18 @@ class Sprite():
     def setAngle(self, newAngle):
         self.angle = newAngle
 
+    def getAngle(self):
+        return self.angle
+
     def rotateBy(self, angleChange):
         self.angle += angleChange
+
+    def pointTo(self, point):
+        # changes our angle so we're pointing from our current location towards "point"
+        v = subtractVectors(point, self.getLocation())
+        angle = vectorToAngle(v)
+        self.setAngle(angle)
+        print("angle: " + str(angle))
 
     def getLocation(self):
         return (self.x, self.y)
@@ -141,6 +151,9 @@ class Sprite():
 
     def setBounceOfEdgeOfScreen(self):
         self.edgeOfScreenChecker = BounceSprite_EdgeOfScreenChecker()
+
+    def setDieOnEdgeOfScreen(self):
+        self.edgeOfScreenChecker = KillSprite_EdgeOfScreenChecker()
 
     def checkEdgeOfScreen(self):
         if self.edgeOfScreenChecker:
