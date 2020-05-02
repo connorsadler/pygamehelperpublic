@@ -80,6 +80,8 @@ class Turret(SpriteWithImage):
 
     def changeTurret(self, makeLonger):
         self.setTurretLength(self.turretLength + (10 if makeLonger else -10))
+        tl = self.turretLength / 10
+        self.gunType.gunType = tl % 5
 
     def draw(self):
         super().draw()
@@ -94,9 +96,7 @@ class Turret(SpriteWithImage):
         # Spawn bullets facing in the same direction as our turret
         self.gunType.fire(self, endOfTurret)
 
-    def getTurretLengthDividedBy10(self):
-        return self.turretLength / 10
-
+    # Called on first click/unclick of button - to "start shooting" and reset any fuel or variables or accel etc in the shot pattern
     def reset(self):
         self.gunType.reset()
 
@@ -112,6 +112,7 @@ class GunTypeA(GunType):
         self.sprayOffsetAdder = 1
         self.sprayAccel = 1
         self.sprayOffset2 = 0
+        self.gunType = 0
 
     def reset(self):
         print("reset")
@@ -126,8 +127,6 @@ class GunTypeA(GunType):
         self.sprayAccel += 0.05
         self.sprayOffset2 += self.sprayAccel
 
-        tl = turret.getTurretLengthDividedBy10()
-        self.gunType = tl % 5
         if self.gunType == 0:
             numBullets = 20
             halfBullets = numBullets / 2
