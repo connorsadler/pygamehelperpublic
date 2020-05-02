@@ -93,6 +93,9 @@ class Turret(SpriteWithImage):
         # Spawn bullets facing in the same direction as our turret
         self.gunType.fire(self, endOfTurret)
 
+    def getTurretLengthDividedBy10(self):
+        return self.turretLength / 10
+
 class GunType:
     def __init__(self):
         pass
@@ -109,13 +112,30 @@ class GunTypeA(GunType):
         if self.sprayOffset > 50 or self.sprayOffset < -50:
             self.sprayOffsetAdder = self.sprayOffsetAdder * -1
 
-        numBullets = 6
-        halfBullets = numBullets / 2
-        for i in range(numBullets):
-            randomnum = random.randint(1, 20)
-            bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (5 * (i - halfBullets)) + randomnum)
-            #bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (5 * (i - halfBullets)) + self.sprayOffset)
-            addSprite(bullet)
+        tl = turret.getTurretLengthDividedBy10()
+        self.gunType = tl % 3
+        if self.gunType == 1:
+            numBullets = 20
+            halfBullets = numBullets / 2
+            for i in range(numBullets):
+                randomnum = random.randint(1, 20)
+                bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (5 * (i - halfBullets)) + randomnum)
+                #bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (5 * (i - halfBullets)) + self.sprayOffset)
+                addSprite(bullet)
+        elif self.gunType == 2:
+            numBullets = 72
+            halfBullets = numBullets / 2
+            for i in range(numBullets):
+                randomnum = 0
+                bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (5 * (i - halfBullets)) + randomnum)
+                addSprite(bullet)
+        else:
+            numBullets = 6
+            halfBullets = numBullets / 2
+            for i in range(numBullets):
+                randomnum = random.randint(1, 20)
+                bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (5 * (i - halfBullets)) + self.sprayOffset)
+                addSprite(bullet)
 
 
 
