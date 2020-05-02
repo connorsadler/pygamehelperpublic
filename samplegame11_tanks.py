@@ -53,7 +53,7 @@ class Tank(SpriteWithImage):
         self.pointTurrentTo = point
 
     def fireBullet(self):
-        self.turret.fire()
+        self.turret.fire(self.pointTurrentTo)
 
     def setFiring(self, firing):
         self.firing = firing
@@ -89,12 +89,12 @@ class Turret(SpriteWithImage):
     def getTurretVector(self):
         return angleToVector(self.angle, self.turretLength)
 
-    def fire(self):
+    def fire(self, towardsPoint):
         # work out where end of turret is
         turretVector = self.getTurretVector()
         endOfTurret = addVectors((self.tank.x, self.tank.y), turretVector)
         # Spawn bullets facing in the same direction as our turret
-        self.gunType.fire(self, endOfTurret)
+        self.gunType.fire(self, endOfTurret, towardsPoint)
 
     # Called on first click/unclick of button - to "start shooting" and reset any fuel or variables or accel etc in the shot pattern
     def reset(self):
@@ -114,7 +114,7 @@ class GunTypeA(GunType):
         self.sprayOffset2 = 0
         self.gunType = 0
 
-        self.NUMBER_OF_GUN_TYPES = 7
+        self.NUMBER_OF_GUN_TYPES = 8
 
     def changeGunType(self, changeBy):
         self.gunType += changeBy
@@ -128,7 +128,7 @@ class GunTypeA(GunType):
         self.sprayAccel = 1
         self.sprayOffset2 = 0
 
-    def fire(self, turret, endOfTurret):
+    def fire(self, turret, endOfTurret, towardsPoint):
         self.sprayOffset += self.sprayOffsetAdder
         if self.sprayOffset > 50 or self.sprayOffset < -50:
             self.sprayOffsetAdder = self.sprayOffsetAdder * -1
@@ -137,6 +137,7 @@ class GunTypeA(GunType):
         self.sprayOffset2 += self.sprayAccel
 
         if self.gunType == 0:
+            # shotgun with randomness
             numBullets = 20
             halfBullets = numBullets / 2
             for i in range(numBullets):
@@ -144,6 +145,7 @@ class GunTypeA(GunType):
                 bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (5 * (i - halfBullets)) + randomnum)
                 addSprite(bullet)
         elif self.gunType == 1:
+            # circle sprays outwards
             numBullets = 72
             halfBullets = numBullets / 2
             for i in range(numBullets):
@@ -151,6 +153,7 @@ class GunTypeA(GunType):
                 bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (5 * (i - halfBullets)) + randomnum)
                 addSprite(bullet)
         elif self.gunType == 2:
+            # spiral - speeds up rotation, bullets run out after a bit
             numBullets = 20 - int(self.sprayOffset2 / 40)
             halfBullets = numBullets / 2
             for i in range(numBullets):
@@ -159,6 +162,7 @@ class GunTypeA(GunType):
                 bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (20 * (i - halfBullets)) + randomnum + self.sprayOffset2)
                 addSprite(bullet)
         elif self.gunType == 3:
+            # electro ray
             numBullets = 15
             halfBullets = numBullets / 2
             for i in range(numBullets):
@@ -166,6 +170,7 @@ class GunTypeA(GunType):
                 bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (15 * (i - halfBullets)) + randomnum)
                 addSprite(bullet)
         elif self.gunType == 4:
+            # circle pattern heads towards target
             numBullets = 15
             angleStep = 2 * math.pi / numBullets
             angle = 0
@@ -180,6 +185,7 @@ class GunTypeA(GunType):
                 addSprite(bullet)
                 angle += angleStep
         elif self.gunType == 5:
+            # arc gun
             numBullets = 15
             arcAngle = math.pi
             angleStep = arcAngle / numBullets
@@ -191,7 +197,28 @@ class GunTypeA(GunType):
                 bullet = Bullet(endOfTurret[0] + dx, endOfTurret[1] + dy, turret.getAngle())
                 addSprite(bullet)
                 angle += angleStep
+        elif self.gunType == 6:
+            # reverse arc, bullets converge on the clicked point
+            numBullets = 10
+            arcAngle = math.pi
+            angleStep = arcAngle / numBullets
+            angle = math.radians(turret.getAngle())
+            #radius = 50 - int(self.sprayOffset2 / 50)
+            radius = 100
+            for i in range(numBullets):
+                dx = radius * math.cos(angle)
+                dy = radius * math.sin(angle)
+                bulletStartX = endOfTurret[0] + dx
+                bulletStartY = endOfTurret[1] + dy
+                #bulletTravelAngle = turret.getAngle()
+                # use towardsPoint to calc bulletTravelAngle
+                bulletTravelVector = subtractVectors(towardsPoint, (bulletStartX, bulletStartY))
+                bulletTravelAngle = vectorToAngle(bulletTravelVector)
+                bullet = Bullet(bulletStartX, bulletStartY, bulletTravelAngle)
+                addSprite(bullet)
+                angle += angleStep
         else:
+            # wavey hosepipe
             numBullets = 6
             halfBullets = numBullets / 2
             for i in range(numBullets):
