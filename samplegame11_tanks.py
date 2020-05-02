@@ -84,7 +84,7 @@ class Turret(SpriteWithImage):
 
     def draw(self):
         super().draw()
-        drawText(str(self.gunType.gunType), 10, 10, pygamehelper.smallFont, red)
+        drawText(str(self.gunType.gunType), 10, 10, pygamehelper.largeFont, red)
 
     def getTurretVector(self):
         return angleToVector(self.angle, self.turretLength)
@@ -114,7 +114,7 @@ class GunTypeA(GunType):
         self.sprayOffset2 = 0
         self.gunType = 0
 
-        self.NUMBER_OF_GUN_TYPES = 6
+        self.NUMBER_OF_GUN_TYPES = 7
 
     def changeGunType(self, changeBy):
         self.gunType += changeBy
@@ -166,14 +166,28 @@ class GunTypeA(GunType):
                 bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (15 * (i - halfBullets)) + randomnum)
                 addSprite(bullet)
         elif self.gunType == 4:
-            numBullets = 20
+            numBullets = 15
             angleStep = 2 * math.pi / numBullets
             angle = 0
+            #angle = math.radians(self.sprayOffset2 % 360)
             radius = 50
+            #radius = 50 - int(self.sprayOffset2 / 50)
             for i in range(numBullets):
                 randomnum = 0
                 dx = radius * math.sin(angle)
                 dy = radius * math.cos(angle)
+                bullet = Bullet(endOfTurret[0] + dx, endOfTurret[1] + dy, turret.getAngle())
+                addSprite(bullet)
+                angle += angleStep
+        elif self.gunType == 5:
+            numBullets = 15
+            arcAngle = math.pi
+            angleStep = arcAngle / numBullets
+            angle = math.radians(turret.getAngle()) + math.pi
+            radius = 50 - int(self.sprayOffset2 / 50)
+            for i in range(numBullets):
+                dx = radius * math.cos(angle)
+                dy = radius * math.sin(angle)
                 bullet = Bullet(endOfTurret[0] + dx, endOfTurret[1] + dy, turret.getAngle())
                 addSprite(bullet)
                 angle += angleStep
@@ -214,7 +228,8 @@ class Bullet(Sprite):
         self.moveForward(3)
 
     def draw(self):
-        super().draw()
+        #super().draw()
+        drawRect(self.boundingRect, red, 2)
 #
 # Game loop logic
 #
@@ -251,6 +266,6 @@ class MyGameLoop(GameLoop):
             self.tank.pointTurretTo(mousePosition)
 
 if __name__ == '__main__':
-    #pygamehelper.debug = False
+    pygamehelper.debug = False
     # Run game loop
     MyGameLoop().runGameLoop()
