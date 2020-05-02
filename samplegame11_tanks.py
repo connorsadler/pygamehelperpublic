@@ -80,11 +80,11 @@ class Turret(SpriteWithImage):
 
     def changeTurret(self, makeLonger):
         self.setTurretLength(self.turretLength + (10 if makeLonger else -10))
-        tl = self.turretLength / 10
-        self.gunType.gunType = tl % 5
+        self.gunType.changeGunType(1 if makeLonger else -1)
 
     def draw(self):
         super().draw()
+        drawText(str(self.gunType.gunType), 10, 10, pygamehelper.smallFont, red)
 
     def getTurretVector(self):
         return angleToVector(self.angle, self.turretLength)
@@ -113,6 +113,15 @@ class GunTypeA(GunType):
         self.sprayAccel = 1
         self.sprayOffset2 = 0
         self.gunType = 0
+
+        self.NUMBER_OF_GUN_TYPES = 6
+
+    def changeGunType(self, changeBy):
+        self.gunType += changeBy
+        if self.gunType == self.NUMBER_OF_GUN_TYPES:
+            self.gunType = 0
+        elif self.gunType < 0:
+            self.gunType = self.NUMBER_OF_GUN_TYPES - 1
 
     def reset(self):
         print("reset")
@@ -156,6 +165,18 @@ class GunTypeA(GunType):
                 randomnum = random.randint(1, 3)
                 bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (15 * (i - halfBullets)) + randomnum)
                 addSprite(bullet)
+        elif self.gunType == 4:
+            numBullets = 20
+            angleStep = 2 * math.pi / numBullets
+            angle = 0
+            radius = 50
+            for i in range(numBullets):
+                randomnum = 0
+                dx = radius * math.sin(angle)
+                dy = radius * math.cos(angle)
+                bullet = Bullet(endOfTurret[0] + dx, endOfTurret[1] + dy, turret.getAngle())
+                addSprite(bullet)
+                angle += angleStep
         else:
             numBullets = 6
             halfBullets = numBullets / 2

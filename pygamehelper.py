@@ -954,6 +954,7 @@ class PathFollowMoveHandler(MoveHandler):
 gameDisplay = None
 clock = None
 defaultFont = None
+smallFont = None
 largeFont = None
 mediumFont = None
 mediumSmallFont = None
@@ -976,6 +977,7 @@ def initPygame():
     global gameDisplay
     global clock
     global defaultFont
+    global smallFont
     global largeFont
     global mediumFont
     global mediumSmallFont
@@ -985,6 +987,7 @@ def initPygame():
     print("gameDisplay is now: " + str(gameDisplay))
     clock = pygame.time.Clock()
     defaultFont = pygame.font.SysFont(None, 12)
+    smallFont = pygame.font.SysFont(None, 13)
     mediumSmallFont = pygame.font.SysFont(None, 14)
     mediumFont = pygame.font.SysFont(None, 18)
     largeFont = pygame.font.SysFont(None, 36)
