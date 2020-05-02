@@ -191,7 +191,7 @@ class GunTypeA(GunType):
             angleStep = arcAngle / numBullets
             angle = math.radians(turret.getAngle()) + math.pi
             radius = 50 - int(self.sprayOffset2 / 50)
-            for i in range(numBullets):
+            for i in range(numBullets+1):
                 dx = radius * math.cos(angle)
                 dy = radius * math.sin(angle)
                 bullet = Bullet(endOfTurret[0] + dx, endOfTurret[1] + dy, turret.getAngle())
@@ -205,13 +205,12 @@ class GunTypeA(GunType):
             angle = math.radians(turret.getAngle())
             #radius = 50 - int(self.sprayOffset2 / 50)
             radius = 100
-            for i in range(numBullets):
+            for i in range(numBullets+1):
                 dx = radius * math.cos(angle)
                 dy = radius * math.sin(angle)
                 bulletStartX = endOfTurret[0] + dx
                 bulletStartY = endOfTurret[1] + dy
-                #bulletTravelAngle = turret.getAngle()
-                # use towardsPoint to calc bulletTravelAngle
+                # each bullet travels at a different angle, to get from it's start point to the clicked destination point
                 bulletTravelVector = subtractVectors(towardsPoint, (bulletStartX, bulletStartY))
                 bulletTravelAngle = vectorToAngle(bulletTravelVector)
                 bullet = Bullet(bulletStartX, bulletStartY, bulletTravelAngle)
