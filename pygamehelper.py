@@ -88,7 +88,7 @@ class Sprite():
         v = subtractVectors(point, self.getLocation())
         angle = vectorToAngle(v)
         self.setAngle(angle)
-        print("angle: " + str(angle))
+        #print("angle: " + str(angle))
 
     def getLocation(self):
         return (self.x, self.y)

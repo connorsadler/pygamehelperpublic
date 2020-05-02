@@ -57,6 +57,7 @@ class Tank(SpriteWithImage):
 
     def setFiring(self, firing):
         self.firing = firing
+        self.turret.reset()
 
     def changeTurret(self, makeLonger):
         self.turret.changeTurret(makeLonger)
@@ -96,38 +97,58 @@ class Turret(SpriteWithImage):
     def getTurretLengthDividedBy10(self):
         return self.turretLength / 10
 
+    def reset(self):
+        self.gunType.reset()
+
 class GunType:
     def __init__(self):
         pass
 
-# Wipes from side to side
+# TODO: Refactor into different types?
 class GunTypeA(GunType):
     def __init__(self):
         super().__init__()
         self.sprayOffset = 0
         self.sprayOffsetAdder = 1
+        self.sprayAccel = 1
+        self.sprayOffset2 = 0
+
+    def reset(self):
+        print("reset")
+        self.sprayAccel = 1
+        self.sprayOffset2 = 0
 
     def fire(self, turret, endOfTurret):
         self.sprayOffset += self.sprayOffsetAdder
         if self.sprayOffset > 50 or self.sprayOffset < -50:
             self.sprayOffsetAdder = self.sprayOffsetAdder * -1
+        
+        self.sprayAccel += 0.05
+        self.sprayOffset2 += self.sprayAccel
 
         tl = turret.getTurretLengthDividedBy10()
-        self.gunType = tl % 4
-        if self.gunType == 1:
+        self.gunType = tl % 5
+        if self.gunType == 0:
             numBullets = 20
             halfBullets = numBullets / 2
             for i in range(numBullets):
                 randomnum = random.randint(1, 20)
                 bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (5 * (i - halfBullets)) + randomnum)
-                #bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (5 * (i - halfBullets)) + self.sprayOffset)
                 addSprite(bullet)
-        elif self.gunType == 2:
+        elif self.gunType == 1:
             numBullets = 72
             halfBullets = numBullets / 2
             for i in range(numBullets):
                 randomnum = 0
                 bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (5 * (i - halfBullets)) + randomnum)
+                addSprite(bullet)
+        elif self.gunType == 2:
+            numBullets = 20 - int(self.sprayOffset2 / 40)
+            halfBullets = numBullets / 2
+            for i in range(numBullets):
+                randomnum = 0
+                #bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (20 * (i - halfBullets)) + randomnum + (self.sprayOffset2 * 2) * (self.sprayAccel / 100))
+                bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (20 * (i - halfBullets)) + randomnum + self.sprayOffset2)
                 addSprite(bullet)
         elif self.gunType == 3:
             numBullets = 15
