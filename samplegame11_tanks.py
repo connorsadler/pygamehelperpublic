@@ -113,7 +113,7 @@ class GunTypeA(GunType):
             self.sprayOffsetAdder = self.sprayOffsetAdder * -1
 
         tl = turret.getTurretLengthDividedBy10()
-        self.gunType = tl % 3
+        self.gunType = tl % 4
         if self.gunType == 1:
             numBullets = 20
             halfBullets = numBullets / 2
@@ -128,6 +128,13 @@ class GunTypeA(GunType):
             for i in range(numBullets):
                 randomnum = 0
                 bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (5 * (i - halfBullets)) + randomnum)
+                addSprite(bullet)
+        elif self.gunType == 3:
+            numBullets = 15
+            halfBullets = numBullets / 2
+            for i in range(numBullets):
+                randomnum = random.randint(1, 3)
+                bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (15 * (i - halfBullets)) + randomnum)
                 addSprite(bullet)
         else:
             numBullets = 6
