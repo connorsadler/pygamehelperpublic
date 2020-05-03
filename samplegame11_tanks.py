@@ -74,7 +74,7 @@ class Tank(SpriteWithImage):
 
 class Tracks(SpriteWithImage):
     def __init__(self, tank):
-        super().__init__(0, 0, 'images/Tanks/PNG/Tanks/tracksSmall.png')
+        super().__init__(0, 0, 'images/Tanks/PNG/Tanks/tracksSmall_75.png')
         self.tank = tank
     def move(self):
         self.setLocation(self.tank.getLocation())
