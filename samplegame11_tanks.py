@@ -76,6 +76,7 @@ class Tracks(SpriteWithImage):
     def __init__(self, tank):
         super().__init__(0, 0, 'images/Tanks/PNG/Tanks/tracksSmall_75.png')
         self.tank = tank
+        
     def move(self):
         self.setLocation(self.tank.getLocation())
 
@@ -132,7 +133,7 @@ class GunTypeA(GunType):
         self.sprayOffset2 = 0
         self.gunType = 0
 
-        self.NUMBER_OF_GUN_TYPES = 8
+        self.NUMBER_OF_GUN_TYPES = 9
 
     def changeGunType(self, changeBy):
         self.gunType += changeBy
@@ -234,6 +235,9 @@ class GunTypeA(GunType):
                 bullet = Bullet(bulletStartX, bulletStartY, bulletTravelAngle)
                 addSprite(bullet)
                 angle += angleStep
+        elif self.gunType == 7:
+            # reverse arc, delayed firing sequence
+            addSprite(Gun7FireHandler(endOfTurret, turret.getAngle(), towardsPoint))
         else:
             # wavey hosepipe
             numBullets = 6
@@ -243,7 +247,74 @@ class GunTypeA(GunType):
                 bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (5 * (i - halfBullets)) + self.sprayOffset)
                 addSprite(bullet)
 
+# turret experiment
+class Gun7FireHandler_v0(Sprite):
+    def __init__(self, endOfTurret, turretAngle, towardsPoint):
+        super().__init__(endOfTurret[0], endOfTurret[1], 5, 5)
+        self.endOfTurret = endOfTurret
+        self.turretAngle = turretAngle
+        self.towardsPoint = towardsPoint
 
+        self.tick = 0
+
+    def move(self):
+        self.tick += 1
+        if self.tick % 30 == 0:
+            bullet = Bullet(self.endOfTurret[0], self.endOfTurret[1], self.turretAngle)
+            addSprite(bullet)
+
+# delayed firing sequence
+class Gun7FireHandler(Sprite):
+    def __init__(self, endOfTurret, turretAngle, towardsPoint):
+        super().__init__(endOfTurret[0], endOfTurret[1], 5, 5)
+
+        self.tick = 0
+        self.bullets = []   # bullets initially created, not added to screen yet
+        self.bullets2 = []  # bullets added to screen but not moving yet
+
+        # reverse arc, bullets converge on the clicked point
+        # create all bullets up front
+        # BUT do NOT add them to the screen yet - they will be added on a delay
+        # THEN once all added they will be fired forwards together
+        numBullets = 20
+        arcAngle = math.pi
+        angleStep = arcAngle / numBullets
+        angle = math.radians(turretAngle)
+        #radius = 50 - int(self.sprayOffset2 / 50)
+        radius = 50
+        for i in range(numBullets+1):
+            dx = radius * math.cos(angle)
+            dy = radius * math.sin(angle)
+            bulletStartX = endOfTurret[0] + dx
+            bulletStartY = endOfTurret[1] + dy
+            # each bullet travels at a different angle, to get from it's start point to the clicked destination point
+            bulletTravelVector = subtractVectors(towardsPoint, (bulletStartX, bulletStartY))
+            bulletTravelAngle = vectorToAngle(bulletTravelVector)
+            #initialSpeed = 0.3
+            #initialSpeed = -1
+            #initialSpeed = -0.3 * random.randint(2, 6)
+            initialSpeed = -0.3 * i
+            bullet = Bullet(bulletStartX, bulletStartY, bulletTravelAngle, initialSpeed)
+            self.bullets.append(bullet)
+            angle += angleStep
+
+    def move(self):
+        self.tick += 1
+        if self.tick % 3 == 0:
+            if len(self.bullets) > 0:
+                bullet = self.bullets.pop(0)
+                addSprite(bullet)
+                self.bullets2.append(bullet)
+            else:
+                # start all bullets moving
+                for bullet in self.bullets2:
+                    bullet.setSpeed(6)
+                # stop this firing sequence
+                self.dead = True
+
+    def draw(self):
+        #super().draw()
+        pass
 
 #
 # Draws the look of the turret onto it's internal image
@@ -263,17 +334,22 @@ class TurrentImageDrawer(CustomDrawingImageHandler):
         pygame.draw.rect(imageToDraw, red, (0,turretLength,10,-turretLength), 0)
 
 class Bullet(Sprite):
-    def __init__(self, x, y, angle):
+    def __init__(self, x, y, angle, speed = 3):
         super().__init__(x, y, 5, 5)
         self.setAngle(angle)
         self.setDieOnEdgeOfScreen()
+        self.speed = speed
 
     def move(self):
-        self.moveForward(3)
+        self.moveForward(self.speed)
 
     def draw(self):
         #super().draw()
         drawRect(self.boundingRect, red, 2)
+
+    def setSpeed(self, speed):
+        self.speed = speed
+
 #
 # Game loop logic
 #
