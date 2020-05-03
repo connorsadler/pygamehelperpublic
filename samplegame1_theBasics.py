@@ -24,8 +24,8 @@ pygamehelper.initPygame()
 # and bounces
 # 
 class Box(Sprite):
-    def __init__(self, x, y, angle):
-        super().__init__(x, y, 70, 70)
+    def __init__(self, x, y, angle, sizex, sizey):
+        super().__init__(x, y, sizex, sizey)
         self.angle = angle
         self.setBounceOfEdgeOfScreen()
 
@@ -48,8 +48,11 @@ class MyGameLoop(GameLoop):
         # Create any initial instances of your sprites here
         #
         # Create a couple of boxes which will bounce around
-        pygamehelper.addSprite(Box(20, 20, 110))
-        pygamehelper.addSprite(Box(20, 300, 45))
+        pygamehelper.addSprite(Box(20, 20, 110, 70, 125))
+        pygamehelper.addSprite(Box(20, 300, 45, 90, 90))
+        # TODO: You can add more boxes here if you like
+        #pygamehelper.addSprite(Box(20, 150, 45, 90, 90))
+
 
     #
     # TODO
