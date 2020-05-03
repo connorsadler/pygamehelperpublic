@@ -23,17 +23,23 @@ if __name__ == '__main__':
 # 
 class Tank(SpriteWithImage):
     def __init__(self, x, y, velocity):
-        super().__init__(x, y, 'invader.png')  # TODO: Image of a tank!
+        super().__init__(x, y, 'images/Tanks/PNG/Tanks/tankBlue.png')
         self.velocity = velocity
         self.turret = Turret(self)
+        self.tracks = Tracks(self)
         self.setBounceOfEdgeOfScreen()
 
         self.setAngle(90)
         self.firing = False
 
+        # used to tell which offset of tracks image to use
+        self.moveCounter = 1
+
     def move(self):
         #self.moveBy(self.velocity[0], self.velocity[1])
         self.moveForward(1.5)
+        self.moveCounter += 1
+        self.tracks.move()
         self.turret.move()
         # always keep turrent pointing to last known mouse position
         self.turret.pointTo(self.pointTurrentTo)
@@ -43,10 +49,14 @@ class Tank(SpriteWithImage):
 
     def moveDone(self):
         super().moveDone()
+        self.tracks.setAngle(self.getAngle())
+        self.tracks.clipArea = Rect(self.moveCounter % 16,0, self.tracks.width, self.tracks.height)
+        self.tracks.moveDone()
         self.turret.moveDone()
 
     def draw(self):
         super().draw()
+        self.tracks.draw()
         self.turret.draw()
 
     def pointTurretTo(self, point):
@@ -61,6 +71,14 @@ class Tank(SpriteWithImage):
 
     def changeTurret(self, makeLonger):
         self.turret.changeTurret(makeLonger)
+
+class Tracks(SpriteWithImage):
+    def __init__(self, tank):
+        super().__init__(0, 0, 'images/Tanks/PNG/Tanks/tracksSmall.png')
+        self.tank = tank
+    def move(self):
+        self.setLocation(self.tank.getLocation())
+
 
 class Turret(SpriteWithImage):
     def __init__(self, tank):
