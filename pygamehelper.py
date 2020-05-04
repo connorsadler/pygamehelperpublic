@@ -1023,6 +1023,20 @@ def drawPoint(point, colour):
 def drawLine(fromPoint, toPoint, colour, width = 1):
     pygame.draw.line(gameDisplay, colour, fromPoint, toPoint, width)
 
+def drawLineThick(fromPoint, toPoint, colour):
+    for x in range(-2,3):
+        for y in range(-2,3):
+            p1 = (fromPoint[0] + x, fromPoint[1] + y)
+            p2 = (toPoint[0] + x, toPoint[1] + y)
+            pygame.draw.line(gameDisplay, colour, p1, p2, 1)
+
+def drawLineaa(fromPoint, toPoint, colour):
+    for x in range(-2,3):
+        for y in range(-2,3):
+            p1 = (fromPoint[0] + x, fromPoint[1] + y)
+            p2 = (toPoint[0] + x, toPoint[1] + y)
+            pygame.draw.aaline(gameDisplay, colour, p1, p2)
+
 #
 # Draws and moves all sprites
 # Also asks all sprites whether any sprite is dead, and removes dead sprites from the game
