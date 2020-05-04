@@ -111,7 +111,7 @@ class GameLogicController(Sprite):
                 self.angleChooser = None
         elif self.stage == 2:
             if self.angleChooser == None:
-                self.angleChooser = AngleChooser(100, 100, 100, 100)
+                self.angleChooser = AngleChooser(60, 250, 100, 100)
                 addSprite(self.angleChooser)
             self.angleChooser.startAngleChange()
         elif self.stage == 3:
