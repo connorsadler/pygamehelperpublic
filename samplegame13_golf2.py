@@ -39,31 +39,72 @@ class Ground(Sprite):
 
     def draw(self):
         drawRect(self.boundingRect, green)
-        # super().draw()
 
     def onClick(self):
         pass
 
-#
-# Allows user to drag and draw the shot "line" away from the ball
-# This sets the angle and power of the shot
-#
-class DragAndDropShotChooser(Sprite):
-    def __init__(self, x, y, w, h):
-        super().__init__(x, y, w, h)
-        self.dragging = False
-        self.dragEndpoint = None
+
+class Stage:
+    def __init__(self, gameLogicController, textMessages):
+        self.gameLogicController = gameLogicController
+        self.textMessages = textMessages
+
+    def reset(self):
+        pass
 
     def move(self):
         pass
 
     def draw(self):
-        super().draw()
-        if self.dragEndpoint != None:
-            drawLineThick((self.x, self.y + self.height), self.dragEndpoint, red)
+        y = self.gameLogicController.y
+        for textMessage in self.textMessages:
+            drawText(textMessage, self.gameLogicController.x, y, pygamehelper.largeFont, blue)
+            y += 30
+
+    def onMouseMove(self, event):
+        pass
 
     def onClick(self, event):
+        if event.type == pygame.MOUSEBUTTONUP:
+            # move to next stage by default when a stage is clicked
+            return True
+
+class Stage1(Stage):
+    def __init__(self, gameLogicController):
+        super().__init__(gameLogicController, ["Welcome to Golf!", "Click here to begin"])
+
+    def reset(self):
+        # move the ball back to it's initial location
+        ball = self.gameLogicController.ball
+        ball.setLocation((100, 350))
+
+#
+# Allows user to drag and draw the shot "line" away from the ball
+# This sets the angle and power of the shot
+#
+class Stage2(Stage):
+    def __init__(self, gameLogicController):
+        super().__init__(gameLogicController, ["Click and drag to choose your shot"])
+        self.reset()
+
+    def reset(self):
+        self.dragging = False
+        self.dragEndpoint = None
+
+    def draw(self):
+        super().draw()
+        if self.dragEndpoint != None:
+            ball = self.gameLogicController.ball
+            drawLineThick((ball.x, ball.y + ball.height), self.dragEndpoint, red)
+
+    def onClick(self, event):
+        if event.type == pygame.MOUSEBUTTONUP:
+            if self.dragging:
+                # shot chosen and mouse released
+                return True
+
         self.dragging = True
+        return False
 
     def isDragging(self):
         return self.dragging
@@ -71,7 +112,14 @@ class DragAndDropShotChooser(Sprite):
     def onMouseMove(self, event):
         if self.dragging:
             self.dragEndpoint = pygame.mouse.get_pos()
-        
+
+class Stage3(Stage):
+    def __init__(self, gameLogicController):
+        super().__init__(gameLogicController, ["Get ready for your shot..."])
+
+    def move(self):
+        ball = self.gameLogicController.ball
+        ball.moveBy(1,1)
 #
 # GameLogicController
 #
@@ -79,57 +127,34 @@ class GameLogicController(Sprite):
     def __init__(self, x, y, ball):
         super().__init__(x, y, screenRect.width, screenRect.height)
         self.ball = ball
-        self.numberOfStages = 3
-        self.stage = 1
-        self.chooser = None
+        self.stages = []
+        self.stages.append(Stage1(self))
+        self.stages.append(Stage2(self))
+        self.stages.append(Stage3(self))
+        self.stage = 0
 
     def move(self):
-        pass
+        self.getCurrentStage().move()
+
+    def getCurrentStage(self):
+        return self.stages[self.stage]
 
     def draw(self):
-        if self.stage == 1:
-            drawText("Welcome to Golf!", self.x, self.y, pygamehelper.largeFont, blue)
-            drawText("Click here to begin", self.x, self.y + 30, pygamehelper.largeFont, blue)
-        elif self.stage == 2:
-            drawText("Click and drag to choose your shot", self.x, self.y, pygamehelper.largeFont, blue)
-        else:
-            drawText("Get ready for your shot...", self.x, self.y, pygamehelper.largeFont, blue)
+        self.getCurrentStage().draw()
 
     def onMouseMove(self, event):
-        if self.stage == 2:
-            self.chooser.onMouseMove(event)
+        self.getCurrentStage().onMouseMove(event)
 
     def onClick(self, event):
-
-        if event.type == pygame.MOUSEBUTTONDOWN:
-
-            if self.stage == 2:
-                self.chooser.onClick(event)
-                return
-
+        clickResult = self.getCurrentStage().onClick(event)
+        if clickResult == True:
             self.nextStage()
-            if self.stage == 1:
-                if self.chooser != None:
-                    self.chooser.dead = True
-                    self.chooser = None
-            elif self.stage == 2:
-                if self.chooser == None:
-                    self.chooser = DragAndDropShotChooser(self.ball.x + 10, self.ball.y, 10, 10)
-                    addSprite(self.chooser)
-            elif self.stage == 3:
-                pass
-
-        elif event.type == pygame.MOUSEBUTTONUP:
-            if self.stage == 2:
-                if self.chooser.isDragging():
-                    # shot chosen and mouse released
-                    self.nextStage()
-            
 
     def nextStage(self):
         self.stage += 1
-        if self.stage > self.numberOfStages:
-            self.stage = 1
+        if self.stage >= len(self.stages):
+            self.stage = 0
+        self.getCurrentStage().reset()
 
 
 #
