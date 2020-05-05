@@ -76,7 +76,8 @@ class Stage1(Stage):
     def reset(self):
         # move the ball back to it's initial location
         ball = self.gameLogicController.ball
-        ball.setLocation((100, 350))
+        ground = self.gameLogicController.ground
+        ball.setLocation((100, ground.y - ball.height - 1))
 
 #
 # Allows user to drag and draw the shot "line" away from the ball
@@ -89,13 +90,15 @@ class Stage2(Stage):
 
     def reset(self):
         self.dragging = False
-        self.dragEndpoint = None
+        self.dragEndPoint = None
+
+        ball = self.gameLogicController.ball
+        self.dragStartPoint = (ball.x, ball.y + ball.height)
 
     def draw(self):
         super().draw()
-        if self.dragEndpoint != None:
-            ball = self.gameLogicController.ball
-            drawLineThick((ball.x, ball.y + ball.height), self.dragEndpoint, red)
+        if self.dragEndPoint != None:
+            drawLineThick(self.dragStartPoint, self.dragEndPoint, red)
 
     def onClick(self, event):
         if event.type == pygame.MOUSEBUTTONUP:
@@ -111,26 +114,57 @@ class Stage2(Stage):
 
     def onMouseMove(self, event):
         if self.dragging:
-            self.dragEndpoint = pygame.mouse.get_pos()
+            self.dragEndPoint = pygame.mouse.get_pos()
+    
+    def getChosenShotVector(self):
+        if self.dragEndPoint == None:
+            return (10, -30)
+        result = subtractVectors(self.dragEndPoint, self.dragStartPoint)
+        # If they dragged down the screen, take that as the drag point spring back towards the ball and hitting it up the screen
+        if result[1] > 0:
+            result = inverseVector(result)
+        return result
 
 class Stage3(Stage):
     def __init__(self, gameLogicController):
-        super().__init__(gameLogicController, ["Get ready for your shot..."])
+        super().__init__(gameLogicController, ["Here is your shot!"])
+        self.moveVector = None
+
+    def reset(self):
+        self.chosenShotVector = self.gameLogicController.getChosenShotVector()
+        self.moveVector = scaleVector(self.chosenShotVector, 0.03)
 
     def move(self):
         ball = self.gameLogicController.ball
-        ball.moveBy(1,1)
+        ball.moveByVector(self.moveVector)
+        self.moveVector = (self.moveVector[0], self.moveVector[1] + 0.07)
+        # Stop it moving past ground level!
+        ground = self.gameLogicController.ground
+        if ball.y >= ground.y - ball.height:
+            ball.y = ground.y - ball.height
+            self.moveVector = (self.moveVector[0] * 0.8, self.moveVector[1] * -0.6)
+        # Once ball stops moving, move to next stage of game
+        if isVectorZero(self.moveVector, 0.1):
+            self.moveVector = (0, 0)
+            self.gameLogicController.nextStage()
+
+class Stage4(Stage):
+    def __init__(self, gameLogicController):
+        super().__init__(gameLogicController, ["Good Shot! Well Played", "Click to play again"])
+
 #
 # GameLogicController
 #
 class GameLogicController(Sprite):
-    def __init__(self, x, y, ball):
+    def __init__(self, x, y, ball, ground):
         super().__init__(x, y, screenRect.width, screenRect.height)
         self.ball = ball
+        self.ground = ground
         self.stages = []
         self.stages.append(Stage1(self))
         self.stages.append(Stage2(self))
         self.stages.append(Stage3(self))
+        self.stages.append(Stage4(self))
         self.stage = 0
 
     def move(self):
@@ -156,6 +190,14 @@ class GameLogicController(Sprite):
             self.stage = 0
         self.getCurrentStage().reset()
 
+    def getStage(self, classname):
+        for stage in self.stages:
+            if isinstance(stage, classname):
+                return stage
+        return None
+
+    def getChosenShotVector(self):
+        return self.getStage(Stage2).getChosenShotVector()
 
 #
 # Game loop logic
@@ -172,9 +214,10 @@ class MyGameLoop(GameLoop):
         # Sprites
         self.ball = Ball(100, 350, 20, 20)
         addSprite(self.ball)
-        addSprite(Ground(0, 370))
+        self.ground = Ground(0, 370)
+        addSprite(self.ground)
 
-        self.gameLogicController = GameLogicController(5, 400, self.ball)
+        self.gameLogicController = GameLogicController(5, 400, self.ball, self.ground)
         addSprite(self.gameLogicController)
 
     #

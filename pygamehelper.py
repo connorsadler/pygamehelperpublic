@@ -114,6 +114,9 @@ class Sprite():
         self.x += xvel
         self.y += yvel
 
+    def moveByVector(self, v):
+        self.moveBy(v[0], v[1])
+
     def moveForward(self, amount):
         (dx, dy) = resolveAngle(self.angle, amount)
         self.x += dx
@@ -657,6 +660,9 @@ def subtractVectors(v1, v2):
 
 def scaleVector(v, scaleBy):
     return (v[0] * scaleBy, v[1] * scaleBy)
+
+def inverseVector(v):
+    return scaleVector(v, -1)
 
 def isVectorZero(v, tolerance):
     if v[0] == 0 and v[1] == 0:
