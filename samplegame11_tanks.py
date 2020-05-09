@@ -243,12 +243,15 @@ class GunTypeA(GunType):
             # reverse arc, delayed firing sequence
             addSprite(Gun7FireHandler(endOfTurret, turret.getAngle(), towardsPoint))
         elif self.gunType == 8:
-            # Matty's Gun!
+            # Matty's Gun! Sonic pulse gun with reset
             self.bulletNum = self.bulletNum - 1
             halfBullets = self.bulletNum / 2
             for i in range(self.bulletNum):
               bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (5 * (i - halfBullets)))
               addSprite(bullet)
+            # reset number of bullets so it fires in waves when you hold mouse button down
+            if self.bulletNum == 0:
+                self.bulletNum = 20
         else:
             # wavey hosepipe
             numBullets = 6
