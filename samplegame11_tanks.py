@@ -132,8 +132,9 @@ class GunTypeA(GunType):
         self.sprayAccel = 1
         self.sprayOffset2 = 0
         self.gunType = 0
+        self.bulletNum = 20
 
-        self.NUMBER_OF_GUN_TYPES = 9
+        self.NUMBER_OF_GUN_TYPES = 10
 
     def changeGunType(self, changeBy):
         self.gunType += changeBy
@@ -146,6 +147,7 @@ class GunTypeA(GunType):
         print("reset")
         self.sprayAccel = 1
         self.sprayOffset2 = 0
+        self.bulletNum = 20
 
     def fire(self, turret, endOfTurret, towardsPoint):
         self.sprayOffset += self.sprayOffsetAdder
@@ -155,14 +157,16 @@ class GunTypeA(GunType):
         self.sprayAccel += 0.05
         self.sprayOffset2 += self.sprayAccel
 
+
+
         if self.gunType == 0:
             # shotgun with randomness
-            numBullets = 20
-            halfBullets = numBullets / 2
-            for i in range(numBullets):
-                randomnum = random.randint(1, 20)
-                bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (5 * (i - halfBullets)) + randomnum)
-                addSprite(bullet)
+          numBullets = 20
+          halfBullets = numBullets / 2
+          for i in range(numBullets):
+              randomnum = random.randint(1, 20)
+              bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (5 * (i - halfBullets)) + randomnum)
+              addSprite(bullet)
         elif self.gunType == 1:
             # circle sprays outwards
             numBullets = 72
@@ -238,6 +242,13 @@ class GunTypeA(GunType):
         elif self.gunType == 7:
             # reverse arc, delayed firing sequence
             addSprite(Gun7FireHandler(endOfTurret, turret.getAngle(), towardsPoint))
+        elif self.gunType == 8:
+            # Matty's Gun!
+            self.bulletNum = self.bulletNum - 1
+            halfBullets = self.bulletNum / 2
+            for i in range(self.bulletNum):
+              bullet = Bullet(endOfTurret[0], endOfTurret[1], turret.getAngle() + (5 * (i - halfBullets)))
+              addSprite(bullet)
         else:
             # wavey hosepipe
             numBullets = 6
