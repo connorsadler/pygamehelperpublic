@@ -41,9 +41,10 @@ def getScreenRect():
 class Sprite():
 
     #
-    # width/height - if you plan on using an image, you can omit both of these values. The sprite's height/width will be set automatically - they'll be available in self.boundingRect
+    # width/height - If you plan on using an image, you can omit both of these values.
+    #                The sprite's height/width will be set automatically - they'll be available in self.boundingRect
     # 
-    def __init__(self, x, y, width=0, height=0):
+    def __init__(self, x, y, width=0, height=0, imageFilenameOrFilenamesOrImageHandler = None):
         self.x = x
         self.y = y
         self.width = width
@@ -73,6 +74,10 @@ class Sprite():
         # Optional object to handle movement of this sprite
         # If one of these is installed, the default "move" method must be called by the Sprite subclass
         self.moveHandler = None
+
+        # Optional image
+        if imageFilenameOrFilenamesOrImageHandler != None:
+            self.setImage(imageFilenameOrFilenamesOrImageHandler) # NOTE: Untested
 
     def setAngle(self, newAngle):
         self.angle = newAngle
@@ -229,6 +234,7 @@ class Sprite():
         else:
             print("changeCostume called with no imageDrawingHelper, costumeIndex: " + str(costumeIndex))
 
+    # Changes to the next costume. If we've reached the last costume, go back to the first one
     # Only works if we have a self.imageDrawingHelper
     def nextCostume(self):
         if self.imageDrawingHelper:
@@ -239,6 +245,9 @@ class Sprite():
     def withTimeout(self, timeoutTicks):
         self.moveHandler = MoveHandlerTimeout(self, timeoutTicks)
         return self
+
+    def setImage(self, imageFilenameOrFilenamesOrImageHandler):
+        self.imageDrawingHelper = SpriteImageDrawingHelper(self, imageFilenameOrFilenamesOrImageHandler)
 
 #
 # This is reduced in size now and could maybe be deleted
