@@ -54,7 +54,7 @@ class Asteroid(SpriteWithImage):
         # reset on every frame the flag to say how many sprites we're overlapping
         self.overlappingAnotherSprite = 0
 
-    # Called if BounceSprite_EdgeOfScreenChecker is used
+    # Called if BounceSprite_EdgeOfScreenChecker i s used
     def bounceOnEdgeOfScreen(self):
         # Wrap to other edge of screen
         wrapSpriteOffEdge(self)
@@ -66,7 +66,7 @@ class Asteroid(SpriteWithImage):
         super().draw()
         # If we're overlapping another sprite, draw a green border - the thickness depends on how many sprites we're overlapping
         if self.overlappingAnotherSprite > 0:
-            pygame.draw.rect(pygamehelper.gameDisplay, green, self.boundingRect, 3 * self.overlappingAnotherSprite)
+            pygame.draw.rect(pygamehelper.gameDisplay, green, self.getBoundingRect(), 3 * self.overlappingAnotherSprite)
 
     def spawnSmallerAsteroidsOnDeath(self):
         # new asteroids will be a size smaller
