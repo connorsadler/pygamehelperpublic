@@ -5,6 +5,49 @@ Python in VS Code
              This stopped the jumping around of Run Test CodeLens adornments - see https://github.com/Microsoft/vscode-python/issues/2790
              Adornments mentioned here: https://code.visualstudio.com/docs/python/testing
 
+29/11/2020 - "Toggle Line Blame Annotations" - remove annoying popup telling me how long ago I changed a line
+
+Settings
+--------
+Best command I found:
+    (1) Cmd+Shift+P -> Open Settings (JSON)
+        This has 3 tabs:
+            User    -   Workspace   -   Folder
+            
+        Example files:
+            User:       ~/Library/Application Support/Code/User/settings.json
+            Workspace:  /Users/connor/python/cfspython.code-workspace
+            Folder:     /Users/connor/python/pygamehelperpublic/.vscode/settings.json
+
+Also:
+    (2) Cmd+Shift+P -> Open Workspace Settings
+    (3) Code -> Preferences -> Settings
+
+
+
+Example Mac Workspace file:
+    /Users/connor/python/cfspython.code-workspace
+
+with contents:
+            {
+            "folders": [
+                {
+                    "path": "pygamehelperpublic"
+                },
+                {
+                    "path": "pythonmac"
+                }
+            ],
+            "settings": {
+                "workbench.editor.enablePreview": false,
+                "python.pythonPath": "/usr/local/bin/python3",
+                "xxxcode-runner.executorMap.python": "python3 -u",
+                "workbench.settings.useSplitJSON": true
+            }
+        }
+
+
+
 
 pygame in vscode - linting
 --------------------------
@@ -23,7 +66,7 @@ VSCode keyboard shortcuts
 -------------------------
 
 The best one:
-    Ctrl + Shift + P        - Run any command by typing it's name e.g. Git Push
+    Ctrl + Shift + P        - Run any command by typing it's name e.g. Git Push                                                         Cmd + Shift + P
 
 Other good ones:
     Ctrl + K -> Ctrl + Q    - Go to last place you made a change to a file
