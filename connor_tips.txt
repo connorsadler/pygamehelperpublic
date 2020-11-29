@@ -5,7 +5,11 @@ Python in VS Code
              This stopped the jumping around of Run Test CodeLens adornments - see https://github.com/Microsoft/vscode-python/issues/2790
              Adornments mentioned here: https://code.visualstudio.com/docs/python/testing
 
-29/11/2020 - "Toggle Line Blame Annotations" - remove annoying popup telling me how long ago I changed a line
+29/11/2020 - remove annoying popup telling me how long ago I changed a line
+             - Disable GitLens “Toggle Line Blame Annotations”
+             - Disable extension: Git History
+             - Disable extension: Git History Diff
+
 
 Settings
 --------
