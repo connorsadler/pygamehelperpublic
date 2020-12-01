@@ -33,24 +33,42 @@ Example Mac Workspace file:
     /Users/connor/python/cfspython.code-workspace
 
 with contents:
+    {
+        "folders": [
             {
-            "folders": [
-                {
-                    "path": "pygamehelperpublic"
-                },
-                {
-                    "path": "pythonmac"
-                }
-            ],
-            "settings": {
-                "workbench.editor.enablePreview": false,
-                "python.pythonPath": "/usr/local/bin/python3",
-                "xxxcode-runner.executorMap.python": "python3 -u",
-                "workbench.settings.useSplitJSON": true
+                "path": "pygamehelperpublic"
+            },
+            {
+                "path": "pythonmac"
             }
+        ],
+        "settings": {
+            "workbench.editor.enablePreview": false,
+            "python.pythonPath": "/usr/local/bin/python3",
+            "xxxcode-runner.executorMap.python": "python3 -u",
+            "workbench.settings.useSplitJSON": true
         }
+    }
 
+User settings on Mac:
 
+    {
+        "gitlens.advanced.messages": {
+            "suppressShowKeyBindingsNotice": true
+        },
+        "java.configuration.checkProjectSettingsExclusions": false,
+        "editor.suggestSelection": "first",
+        "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+        "python.jediEnabled": false,
+        "git.confirmSync": false,
+        "git.autofetch": true,
+        "git.enableSmartCommit": true,
+        "gitlens.codeLens.enabled": false,
+        "python.pythonPath": "/usr/local/bin/python3",
+        "code-runner.executorMap.python": "python3 -u",
+        "workbench.settings.useSplitJSON": true,
+        "workbench.tree.indent": 20
+    }
 
 
 pygame in vscode - linting
@@ -78,7 +96,7 @@ Other good ones:
     Alt + Left              - Go Back (aka "Go back out")
                               You need to map this keyboard shortcut yourself I think
     Ctrl + PageUp/Down      - Move between open files
-    Ctrl + P                - Open file by name
+    Ctrl + P                - Open file by name     (Go to file)                                                Cmd + P
 
     Ctrl + Shift + G -> ,   - Compare file with previous revision (See changes for current file)
 
