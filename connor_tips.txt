@@ -26,49 +26,17 @@ Best command I found:
 Also:
     (2) Cmd+Shift+P -> Open Workspace Settings
     (3) Code -> Preferences -> Settings
-
+    (4) GitLens: Open Settings
 
 
 Example Mac Workspace file:
-    /Users/connor/python/cfspython.code-workspace
+    /Users/connor/python/pythonmac/cfspython.code-workspace
 
 with contents:
-    {
-        "folders": [
-            {
-                "path": "pygamehelperpublic"
-            },
-            {
-                "path": "pythonmac"
-            }
-        ],
-        "settings": {
-            "workbench.editor.enablePreview": false,
-            "python.pythonPath": "/usr/local/bin/python3",
-            "xxxcode-runner.executorMap.python": "python3 -u",
-            "workbench.settings.useSplitJSON": true
-        }
-    }
+    see contents in Git - I am commiting this file now
 
 User settings on Mac:
-
-    {
-        "gitlens.advanced.messages": {
-            "suppressShowKeyBindingsNotice": true
-        },
-        "java.configuration.checkProjectSettingsExclusions": false,
-        "editor.suggestSelection": "first",
-        "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
-        "python.jediEnabled": false,
-        "git.confirmSync": false,
-        "git.autofetch": true,
-        "git.enableSmartCommit": true,
-        "gitlens.codeLens.enabled": false,
-        "python.pythonPath": "/usr/local/bin/python3",
-        "code-runner.executorMap.python": "python3 -u",
-        "workbench.settings.useSplitJSON": true,
-        "workbench.tree.indent": 20
-    }
+    see workspace settings rather than user settings
 
 
 pygame in vscode - linting
