@@ -96,7 +96,7 @@ Other good ones:
     Alt + Left              - Go Back (aka "Go back out")
                               You need to map this keyboard shortcut yourself I think
     Ctrl + PageUp/Down      - Move between open files
-    Ctrl + P                - Open file by name     (Go to file)                                                Cmd + P
+    Ctrl + P                - Open file by name     (Go to file)                                                                        Cmd + P
 
     Ctrl + Shift + G -> ,   - Compare file with previous revision (See changes for current file)
 
