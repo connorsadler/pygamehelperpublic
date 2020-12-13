@@ -66,7 +66,7 @@ Other good ones:
     Ctrl + PageUp/Down      - Move between open files
     Ctrl + P                - Open file by name     (Go to file)                                                                        Cmd + P
 
-    Ctrl + Shift + G -> ,   - Compare file with previous revision (See changes for current file)
+    Ctrl + Shift + G -> ,   - Compare file with previous revision (See changes for current file)                                        Cmd + Alt + G -> ,          bit iffy keyboard shortcut though
 
     Ctrl + Shift + E        - Go to files list tab on left
     Ctrl + Shift + G        - Go to Source Control (Git) tab on left  (GitLens seems to interfere with this one though)
