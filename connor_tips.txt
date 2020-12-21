@@ -41,9 +41,11 @@ User settings on Mac:
 
 pygame in vscode - linting
 --------------------------
-
 https://stackoverflow.com/questions/50569453/why-does-it-say-that-module-pygame-has-no-init-member
 
+Also on "unresolved import" issue:
+    "python.autoComplete.extraPaths": ["../pythonmac/advent_of_code_2020"],
+    See: https://stackoverflow.com/a/57669739
 
 Windows
 -------
@@ -60,10 +62,10 @@ The best one:
 
 Other good ones:
     Ctrl + K -> Ctrl + Q    - Go to last place you made a change to a file
-    F12                     - Go to Definition (aka "Go in")
-    Alt + Left              - Go Back (aka "Go back out")
+    F12                     - Go to Definition (aka "Go in")                                                                            CFS changed to: Cmd + B
+    Alt + Left              - Go Back (aka "Go back out")                                                                               CFS changed to: Cmd + [
                               You need to map this keyboard shortcut yourself I think
-    Ctrl + PageUp/Down      - Move between open files
+    Ctrl + PageUp/Down      - Move between open files                                                                                   Cmd + Shift [ or ]
     Ctrl + P                - Open file by name     (Go to file)                                                                        Cmd + P
 
     Ctrl + Shift + G -> ,   - Compare file with previous revision (See changes for current file)                                        Cmd + Alt + G -> ,          bit iffy keyboard shortcut though
