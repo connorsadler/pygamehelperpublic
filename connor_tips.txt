@@ -10,6 +10,8 @@ Python in VS Code
              - Disable extension: Git History
              - Disable extension: Git History Diff
 
+??/??/2020 - pygame errors/warnings in vscode - see section below: "pygame in vscode - linting"
+
 
 Settings
 --------
@@ -76,6 +78,10 @@ Other good ones:
     Ctrl + Shift + F        - Find in files
 
     Ctrl + K -> Ctrl + S    - Open Keyboard Shortcuts
+
+    Ctrl + Shift + Cmd + Right   - Expand Selection                                                                                     Alt + Up        CFS Changed to match Intellij
+    Ctrl + Shift + Cmd + Left    - Shrink Selection                                                                                     Alt + Down      CFS Changed to match Intellij
+
 
     Ctrl + Shift + P
         "Open Settings json"     - Open user settings json
