@@ -63,6 +63,7 @@ The best one:
     Ctrl + Shift + P        - Run any command by typing it's name e.g. Git Push                                                         Cmd + Shift + P
 
 Other good ones:
+    General:
     Ctrl + K -> Ctrl + Q    - Go to last place you made a change to a file
     F12                     - Go to Definition (aka "Go in")                                                                            CFS changed to: Cmd + B
     Alt + Left              - Go Back (aka "Go back out")                                                                               CFS changed to: Cmd + [
@@ -72,21 +73,23 @@ Other good ones:
 
     Ctrl + Shift + G -> ,   - Compare file with previous revision (See changes for current file)                                        Cmd + Alt + G -> ,          bit iffy keyboard shortcut though
 
+    Navigation:
     Ctrl + Shift + E        - Go to files list tab on left
     Ctrl + Shift + G        - Go to Source Control (Git) tab on left  (GitLens seems to interfere with this one though)
     Ctrl + Shift + G -> G   - Go to Source Control (Git) tab - if GitLens is enabled
     Ctrl + Shift + F        - Find in files
+    Cmd + Shift + I         - Test View                                                                                                 Cmd + Shift + I             custom binding - keyboard shortcuts -> view.extension.test -> assign shortcut
 
-    Ctrl + K -> Ctrl + S    - Open Keyboard Shortcuts
-
+    Editing:
     Ctrl + Shift + Cmd + Right   - Expand Selection                                                                                     Alt + Up        CFS Changed to match Intellij
     Ctrl + Shift + Cmd + Left    - Shrink Selection                                                                                     Alt + Down      CFS Changed to match Intellij
-
-
-    Ctrl + Shift + P
-        "Open Settings json"     - Open user settings json
-
     Ctrl + K -> Enter       - Keep file open (turn temporary preview editor into a full one)
+
+    Settings:
+    Ctrl + Shift + P
+        "Open Settings json"    - Open user settings json
+    Ctrl + K -> Ctrl + S        - Open Keyboard Shortcuts
+
 
 GitLens
 -------
