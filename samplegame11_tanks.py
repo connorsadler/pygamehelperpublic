@@ -32,6 +32,8 @@ class Tank(SpriteWithImage):
         self.setAngle(90)
         self.firing = False
 
+        self.pointTurrentTo = (0,0)
+
         # used to tell which offset of tracks image to use
         self.moveCounter = 1
 
